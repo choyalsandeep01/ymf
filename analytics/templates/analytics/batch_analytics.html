@@ -1,0 +1,697 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ batch.name }} - Analytics{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Batch Header -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-blue-600">
+        <div class="flex justify-between items-start flex-wrap gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ batch.name }}</h1>
+                <p class="text-gray-600">{{ batch.description }}</p>
+            </div>
+            <a href="{% url 'analytics:dashboard' %}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-all shadow-md hover:shadow-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-blue-500 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1 font-medium">Total Students</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ total_students }}</p>
+                </div>
+                <div class="bg-blue-100 rounded-full p-4">
+                    <i class="fas fa-users text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-green-500 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1 font-medium">Average Score</p>
+                    <p class="text-3xl font-bold text-green-600">{{ avg_score }}%</p>
+                </div>
+                <div class="bg-green-100 rounded-full p-4">
+                    <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-purple-500 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1 font-medium">Total Sessions</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ total_sessions }}</p>
+                </div>
+                <div class="bg-purple-100 rounded-full p-4">
+                    <i class="fas fa-list-ol text-purple-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-orange-500 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1 font-medium">Total Camps</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ camps|length }}</p>
+                </div>
+                <div class="bg-orange-100 rounded-full p-4">
+                    <i class="fas fa-campground text-orange-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900">
+                <i class="fas fa-filter text-blue-600 mr-2"></i>Performance Filters
+            </h2>
+            <button onclick="resetFilters()" class="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 font-medium transition-all">
+                <i class="fas fa-redo mr-2"></i>Reset Filters
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">View Type</label>
+                <select id="viewTypeFilter" onchange="applyFilters()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="overall">Overall Performance</option>
+                    <option value="camp">Camp-wise</option>
+                    <option value="session">Session-wise</option>
+                    <option value="prepost">Pre vs Post Test</option>
+                </select>
+            </div>
+
+            <div id="campFilterDiv" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Camp</label>
+                <select id="campFilter" onchange="loadCampSessions()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Camps</option>
+                    {% for camp in camps %}
+                    <option value="{{ camp.id }}">Camp {{ camp.camp_number }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="sessionFilterDiv" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Session</label>
+                <select id="sessionFilter" onchange="applyFilters()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Sessions</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                <select id="sortFilter" onchange="applyFilters()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="name">Student Name</option>
+                    <option value="score_high">Score (High to Low)</option>
+                    <option value="score_low">Score (Low to High)</option>
+                    <option value="improvement">Improvement</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-chart-bar text-blue-600 mr-2"></i><span id="chartTitle">Overall Batch Performance</span>
+        </h2>
+        <div style="position: relative; height: 400px;">
+            <canvas id="batchPerformanceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Student Comparison Section -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-users-cog text-purple-600 mr-2"></i>Student Performance Comparison
+        </h2>
+
+        <div class="mb-6">
+            <div class="flex items-center space-x-4 mb-4">
+                <button onclick="showComparisonChart('radar')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all chart-type-btn active" data-type="radar">
+                    <i class="fas fa-chart-area mr-2"></i>Radar Chart
+                </button>
+                <button onclick="showComparisonChart('bar')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all chart-type-btn" data-type="bar">
+                    <i class="fas fa-chart-bar mr-2"></i>Bar Chart
+                </button>
+                <button onclick="showComparisonChart('line')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all chart-type-btn" data-type="line">
+                    <i class="fas fa-chart-line mr-2"></i>Line Chart
+                </button>
+            </div>
+
+            <div style="position: relative; height: 450px;">
+                <canvas id="studentComparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pre vs Post Test Comparison -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-exchange-alt text-green-600 mr-2"></i>Pre-Test vs Post-Test Analysis
+        </h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                <h3 class="text-lg font-bold text-blue-900 mb-4">Average Improvement</h3>
+                <div class="text-center">
+                    <p class="text-5xl font-bold text-blue-600" id="avgImprovement">--</p>
+                    <p class="text-sm text-gray-600 mt-2">Percentage Points</p>
+                </div>
+            </div>
+
+            <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+                <h3 class="text-lg font-bold text-green-900 mb-4">Top Performer</h3>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-green-600" id="topPerformer">--</p>
+                    <p class="text-sm text-gray-600 mt-2" id="topPerformerScore">--</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="position: relative; height: 400px;">
+            <canvas id="prePostComparisonChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Camps Overview -->
+    {% if camps %}
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-campground text-orange-600 mr-2"></i>Camps Overview
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for camp in camps %}
+            <div class="border-2 border-gray-200 rounded-xl p-6 hover:shadow-xl hover:border-blue-400 transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Camp {{ camp.camp_number }}</h3>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold {% if camp.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {% if camp.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+                <div class="space-y-3 mb-4">
+                    <p class="text-sm text-gray-600 flex items-center">
+                        <i class="fas fa-calendar text-blue-500 mr-3 w-4"></i>
+                        {{ camp.start_date|date:"M d" }} - {{ camp.end_date|date:"M d, Y" }}
+                    </p>
+                    <p class="text-sm text-gray-600 flex items-center">
+                        <i class="fas fa-list-ol text-purple-500 mr-3 w-4"></i>
+                        {{ camp.sessions.count }} Sessions
+                    </p>
+                </div>
+                <a href="{% url 'analytics:camp_analytics' camp.id %}" class="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg w-full justify-center transition-all shadow-md hover:shadow-lg">
+                    <i class="fas fa-chart-line mr-2"></i>View Camp Analytics
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Students Performance Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="bg-gray-50 px-6 py-4 border-b">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold text-gray-900">
+                    <i class="fas fa-user-graduate text-green-600 mr-2"></i>Student Performance Details
+                </h2>
+                <div class="flex space-x-2">
+                    <button onclick="exportTableData()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-all">
+                        <i class="fas fa-download mr-2"></i>Export CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {% if student_performance %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="studentPerformanceTable">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Student</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Current Camp</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Overall Score</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Pre-Test Avg</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Post-Test Avg</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Improvement</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Attempts</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for perf in student_performance %}
+                    <tr class="hover:bg-blue-50 transition-colors student-row" 
+                        data-student-id="{{ perf.user.id }}"
+                        data-overall-score="{{ perf.overall_avg }}"
+                        data-improvement="{{ perf.improvement }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span class="text-blue-600 font-bold text-sm">{{ perf.user.get_full_name|slice:":1" }}</span>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ perf.user.get_full_name }}</div>
+                                    <div class="text-sm text-gray-500">@{{ perf.user.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ perf.user.email }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                                {% if perf.current_camp == 0 %}bg-gray-100 text-gray-800
+                                {% elif perf.current_camp > 3 %}bg-green-100 text-green-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {% if perf.current_camp == 0 %}Pre-Camp
+                                {% elif perf.current_camp > 3 %}Completed
+                                {% else %}Camp {{ perf.current_camp }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="flex flex-col items-center">
+                                <span class="text-lg font-bold text-blue-600">{{ perf.overall_avg|floatformat:1 }}%</span>
+                                <div class="w-20 bg-gray-200 rounded-full h-2 mt-1">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ perf.overall_avg }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="text-sm font-semibold text-orange-600">{{ perf.pre_avg|floatformat:1 }}%</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="text-sm font-semibold text-green-600">{{ perf.post_avg|floatformat:1 }}%</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            {% if perf.improvement > 0 %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                <i class="fas fa-arrow-up mr-1"></i>{{ perf.improvement|floatformat:1 }}%
+                            </span>
+                            {% elif perf.improvement < 0 %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                                <i class="fas fa-arrow-down mr-1"></i>{{ perf.improvement|floatformat:1 }}%
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">
+                                <i class="fas fa-minus mr-1"></i>0%
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">
+                                {{ perf.total_attempts }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'analytics:user_analytics' perf.user.id %}" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all">
+                                <i class="fas fa-chart-line mr-2"></i>View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-12 text-center">
+            <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
+            <p class="text-gray-500 text-lg">No students enrolled in this batch yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let currentChart = null;
+let comparisonChart = null;
+let prePostChart = null;
+let currentChartType = 'radar';
+
+// Wait for page to load
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        loadMainChart();
+        loadStudentComparison();
+        loadPrePostComparison();
+    }, 100);
+});
+
+// Load main performance chart
+function loadMainChart() {
+    const canvas = document.getElementById('batchPerformanceChart');
+    if (!canvas) return;
+
+    fetch("{% url 'analytics:batch_performance_data' batch.id %}")
+        .then(response => response.json())
+        .then(data => {
+            const ctx = canvas.getContext('2d');
+            if (currentChart) currentChart.destroy();
+
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: { size: 12, weight: 'bold' },
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Average Score (%)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Sessions',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading chart:', error);
+            canvas.parentElement.innerHTML = '<div class="text-center p-8"><i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-3"></i><p class="text-gray-500">No performance data available yet.</p></div>';
+        });
+}
+
+// Load student comparison chart
+function loadStudentComparison() {
+    const canvas = document.getElementById('studentComparisonChart');
+    if (!canvas) return;
+
+    fetch("{% url 'analytics:student_comparison_data' batch.id %}")
+        .then(response => response.json())
+        .then(data => {
+            renderComparisonChart(data, 'radar');
+        })
+        .catch(error => console.error('Error loading comparison:', error));
+}
+
+// Render comparison chart with different types
+function renderComparisonChart(data, chartType) {
+    const canvas = document.getElementById('studentComparisonChart');
+    const ctx = canvas.getContext('2d');
+
+    if (comparisonChart) comparisonChart.destroy();
+
+    const config = {
+        type: chartType,
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        font: { size: 11 },
+                        padding: 10,
+                        boxWidth: 15
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12
+                }
+            }
+        }
+    };
+
+    if (chartType === 'radar') {
+        config.options.scales = {
+            r: {
+                beginAtZero: true,
+                max: 100,
+                ticks: { stepSize: 20 }
+            }
+        };
+    } else {
+        config.options.scales = {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                title: { display: true, text: 'Score (%)' }
+            }
+        };
+    }
+
+    comparisonChart = new Chart(ctx, config);
+}
+
+// Show different comparison chart types
+function showComparisonChart(type) {
+    currentChartType = type;
+
+    // Update button styles
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-blue-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+    });
+    event.target.closest('button').classList.add('active', 'bg-blue-600', 'text-white');
+    event.target.closest('button').classList.remove('bg-gray-200', 'text-gray-700');
+
+    // Reload chart
+    fetch("{% url 'analytics:student_comparison_data' batch.id %}")
+        .then(response => response.json())
+        .then(data => renderComparisonChart(data, type))
+        .catch(error => console.error('Error:', error));
+}
+
+// Load pre vs post comparison
+function loadPrePostComparison() {
+    const canvas = document.getElementById('prePostComparisonChart');
+    if (!canvas) return;
+
+    fetch("{% url 'analytics:prepost_comparison_data' batch.id %}")
+        .then(response => response.json())
+        .then(data => {
+            // Update statistics
+            if (data.avgImprovement !== undefined) {
+                document.getElementById('avgImprovement').textContent = data.avgImprovement.toFixed(1) + '%';
+            }
+            if (data.topPerformer) {
+                document.getElementById('topPerformer').textContent = data.topPerformer.name;
+                document.getElementById('topPerformerScore').textContent = 
+                    'Improvement: ' + data.topPerformer.improvement.toFixed(1) + '%';
+            }
+
+            // Render chart
+            const ctx = canvas.getContext('2d');
+            if (prePostChart) prePostChart.destroy();
+
+            prePostChart = new Chart(ctx, {
+                type: 'bar',
+                data: data.chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Score (%)' }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading pre/post data:', error));
+}
+
+// Filter functions
+function applyFilters() {
+    const viewType = document.getElementById('viewTypeFilter').value;
+    const campId = document.getElementById('campFilter').value;
+    const sessionId = document.getElementById('sessionFilter').value;
+    const sortBy = document.getElementById('sortFilter').value;
+
+    // Show/hide filter dropdowns
+    document.getElementById('campFilterDiv').style.display = 
+        (viewType === 'camp' || viewType === 'session' || viewType === 'prepost') ? 'block' : 'none';
+    document.getElementById('sessionFilterDiv').style.display = 
+        (viewType === 'session' || viewType === 'prepost') ? 'block' : 'none';
+
+    // Update chart title
+    let title = 'Overall Batch Performance';
+    if (viewType === 'camp') title = 'Camp-wise Performance';
+    else if (viewType === 'session') title = 'Session-wise Performance';
+    else if (viewType === 'prepost') title = 'Pre-Test vs Post-Test';
+    document.getElementById('chartTitle').textContent = title;
+
+    // Apply sorting to table
+    sortTableRows(sortBy);
+
+    // Reload charts with filters
+    loadFilteredData(viewType, campId, sessionId);
+}
+
+function loadCampSessions() {
+    const campId = document.getElementById('campFilter').value;
+    const sessionSelect = document.getElementById('sessionFilter');
+
+    if (!campId) {
+        sessionSelect.innerHTML = '<option value="">All Sessions</option>';
+        return;
+    }
+
+    fetch(`/analytics/camp/${campId}/sessions/`)
+        .then(response => response.json())
+        .then(sessions => {
+            sessionSelect.innerHTML = '<option value="">All Sessions</option>';
+            sessions.forEach(session => {
+                sessionSelect.innerHTML += `<option value="${session.id}">Session ${session.session_number}</option>`;
+            });
+            applyFilters();
+        })
+        .catch(error => console.error('Error loading sessions:', error));
+}
+
+function loadFilteredData(viewType, campId, sessionId) {
+    let url = "{% url 'analytics:batch_performance_data' batch.id %}";
+    url += `?view_type=${viewType}&camp_id=${campId}&session_id=${sessionId}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const canvas = document.getElementById('batchPerformanceChart');
+            const ctx = canvas.getContext('2d');
+            if (currentChart) currentChart.destroy();
+
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function sortTableRows(sortBy) {
+    const table = document.getElementById('studentPerformanceTable');
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('.student-row'));
+
+    rows.sort((a, b) => {
+        if (sortBy === 'name') {
+            const nameA = a.querySelector('.text-sm.font-medium').textContent;
+            const nameB = b.querySelector('.text-sm.font-medium').textContent;
+            return nameA.localeCompare(nameB);
+        } else if (sortBy === 'score_high') {
+            return parseFloat(b.dataset.overallScore) - parseFloat(a.dataset.overallScore);
+        } else if (sortBy === 'score_low') {
+            return parseFloat(a.dataset.overallScore) - parseFloat(b.dataset.overallScore);
+        } else if (sortBy === 'improvement') {
+            return parseFloat(b.dataset.improvement) - parseFloat(a.dataset.improvement);
+        }
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+function resetFilters() {
+    document.getElementById('viewTypeFilter').value = 'overall';
+    document.getElementById('campFilter').value = '';
+    document.getElementById('sessionFilter').value = '';
+    document.getElementById('sortFilter').value = 'name';
+    applyFilters();
+}
+
+function exportTableData() {
+    const table = document.getElementById('studentPerformanceTable');
+    let csv = [];
+
+    // Headers
+    const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+    csv.push(headers.join(','));
+
+    // Rows
+    table.querySelectorAll('tbody tr').forEach(row => {
+        const rowData = [];
+        row.querySelectorAll('td').forEach((cell, index) => {
+            if (index < headers.length - 1) { // Skip actions column
+                rowData.push('"' + cell.textContent.trim().replace(/"/g, '""') + '"');
+            }
+        });
+        csv.push(rowData.join(','));
+    });
+
+    // Download
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'student_performance_{{ batch.name }}.csv';
+    a.click();
+}
+</script>
+
+<style>
+.chart-type-btn.active {
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.student-row:hover {
+    transform: translateX(4px);
+    transition: transform 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    table { font-size: 0.875rem; }
+    .px-6 { padding-left: 1rem; padding-right: 1rem; }
+}
+</style>
+{% endblock %}

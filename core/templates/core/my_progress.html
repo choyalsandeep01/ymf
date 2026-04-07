@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}My Progress{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-xl p-6 mb-8 text-white">
+        <h1 class="text-3xl font-bold mb-2">
+            <i class="fas fa-chart-line mr-2"></i>My Progress
+        </h1>
+        <p class="text-blue-100">Track your journey through the CAMP program</p>
+    </div>
+    
+    <!-- Batches -->
+    {% if user_batches %}
+    <div class="space-y-6">
+        {% for user_batch in user_batches %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-gray-50 px-6 py-4 border-b">
+                <h2 class="text-xl font-bold text-gray-900">{{ user_batch.batch.name }}</h2>
+                <p class="text-sm text-gray-600">Enrolled: {{ user_batch.enrolled_at|date:"F d, Y" }}</p>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700">Overall Progress</span>
+                        <span class="text-sm font-medium text-blue-600">Camp {{ user_batch.current_camp }} of 3</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ user_batch.progress_percentage }}%"></div>
+                    </div>
+                </div>
+                <a href="{% url 'core:batch_detail' user_batch.batch.id %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+                    <i class="fas fa-arrow-right mr-2"></i>View Batch Details
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-r-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-yellow-400 text-2xl"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-yellow-700">You are not enrolled in any batch yet. Please complete your application and interview process.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Progress Timeline -->
+    {% if progress %}
+    <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-tasks text-green-600 mr-2"></i>Activity Timeline
+        </h2>
+        <div class="space-y-4">
+            {% for item in progress %}
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-full 
+                        {% if item.status == 'completed' %}bg-green-100 text-green-600
+                        {% elif item.status == 'in-progress' %}bg-blue-100 text-blue-600
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                        <i class="fas {% if item.status == 'completed' %}fa-check{% elif item.status == 'in-progress' %}fa-spinner{% else %}fa-clock{% endif %}"></i>
+                    </span>
+                </div>
+                <div class="ml-4 flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ item.stage }}</h3>
+                    <p class="text-sm text-gray-500">Status: {{ item.status }}</p>
+                    {% if item.completed_at %}
+                    <p class="text-xs text-gray-400">Completed: {{ item.completed_at|date:"M d, Y" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Custom filter for template
+document.addEventListener('DOMContentLoaded', function() {
+    // Any JavaScript for progress calculations
+});
+</script>
+{% endblock %}

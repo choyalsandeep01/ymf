@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ questionnaire.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Timer and Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6 sticky top-0 z-10">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ questionnaire.title }}</h1>
+                <p class="text-sm text-gray-500">{{ questions.count }} Questions</p>
+            </div>
+            {% if questionnaire.time_limit_minutes %}
+            <div class="text-right">
+                <p class="text-sm text-gray-600">Time Remaining</p>
+                <p id="timer" class="text-3xl font-bold text-red-600">{{ questionnaire.time_limit_minutes }}:00</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <form method="POST" id="questionnaireForm">
+        {% csrf_token %}
+        
+        <!-- Questions -->
+        <div class="space-y-6">
+            {% for question in questions %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-start mb-4">
+                    <span class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold mr-4">
+                        {{ forloop.counter }}
+                    </span>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ question.question_text }}</h3>
+                        {% if question.question_image %}
+                        <img src="{{ question.question_image.url }}" alt="Question Image" class="max-w-md rounded-lg mb-4">
+                        {% endif %}
+                        
+                        <p class="text-xs text-gray-500 mb-4">
+                            <i class="fas fa-star text-yellow-500 mr-1"></i>
+                            {{ question.marks }} mark(s)
+                        </p>
+                        
+                        {% if question.question_type == 'MCQ' or question.question_type == 'IMAGE_MCQ' %}
+                        <!-- MCQ Options -->
+                        <div class="space-y-3">
+                            {% for option in question.options.all %}
+                            <label class="flex items-start p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition">
+                                <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}" class="mt-1 mr-3">
+                                <div class="flex-1">
+                                    {% if option.option_text %}
+                                    <span class="text-gray-900">{{ option.option_text }}</span>
+                                    {% endif %}
+                                    {% if option.option_image %}
+                                    <img src="{{ option.option_image.url }}" alt="Option" class="max-w-xs rounded mt-2">
+                                    {% endif %}
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        
+                        {% elif question.question_type == 'SUBJECTIVE' %}
+                        <!-- Subjective Answer -->
+                        <textarea name="question_{{ question.id }}" rows="6" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Enter your answer here..."></textarea>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center">
+                <p class="text-gray-600">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Make sure you have answered all questions before submitting.
+                </p>
+                <button type="submit" onclick="return confirm('Are you sure you want to submit? You cannot change your answers after submission.')" class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-md">
+                    <i class="fas fa-paper-plane mr-2"></i>Submit Answers
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if questionnaire.time_limit_minutes %}
+<script>
+let timeLimit = {{ questionnaire.time_limit_minutes }} * 60; // Convert to seconds
+let timerElement = document.getElementById('timer');
+
+function updateTimer() {
+    let minutes = Math.floor(timeLimit / 60);
+    let seconds = timeLimit % 60;
+    
+    timerElement.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+    
+    if (timeLimit <= 0) {
+        alert('Time is up! Your answers will be submitted automatically.');
+        document.getElementById('questionnaireForm').submit();
+    } else if (timeLimit <= 60) {
+        timerElement.classList.add('animate-pulse');
+    }
+    
+    timeLimit--;
+}
+
+setInterval(updateTimer, 1000);
+</script>
+{% endif %}
+{% endblock %}

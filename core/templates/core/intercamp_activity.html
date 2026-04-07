@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ activity.title }} - Intercamp Activity{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Activity Header -->
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-xl p-6 mb-8 text-white">
+        <h1 class="text-3xl font-bold mb-2">{{ activity.title }}</h1>
+        <p class="text-purple-100 mb-4">{{ activity.description }}</p>
+        <p class="text-sm">
+            <i class="fas fa-calendar mr-2"></i>
+            {{ activity.start_date|date:"F d, Y" }} - {{ activity.end_date|date:"F d, Y" }}
+        </p>
+    </div>
+    
+    <!-- Submit Media Section -->
+    {% if activity.is_active %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-upload text-purple-600 mr-2"></i>Submit Your Work
+        </h2>
+        <p class="text-gray-600 mb-6">Upload your PDFs, PPTs, images, videos, or documents for this activity.</p>
+        <a href="{% url 'core:submit_media' activity.id %}" class="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md">
+            <i class="fas fa-cloud-upload-alt mr-2"></i>Upload Media
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- Your Submissions -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-folder-open text-blue-600 mr-2"></i>Your Submissions
+        </h2>
+        
+        {% if user_submissions %}
+        <div class="space-y-4">
+            {% for submission in user_submissions %}
+            <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ submission.title }}</h3>
+                        <p class="text-sm text-gray-600 mb-2">{{ submission.description }}</p>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                            <span>
+                                <i class="fas fa-calendar mr-1"></i>
+                                {{ submission.submitted_at|date:"M d, Y" }}
+                            </span>
+                            <span class="px-2 py-1 rounded text-xs font-medium
+                                {% if submission.status == 'APPROVED' %}bg-green-100 text-green-800
+                                {% elif submission.status == 'REJECTED' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ submission.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{{ submission.file.url }}" target="_blank" class="ml-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+                        <i class="fas fa-eye mr-2"></i>View
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-folder-open text-gray-300 text-5xl mb-4"></i>
+            <p class="text-gray-500">No submissions yet. Upload your first submission above!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

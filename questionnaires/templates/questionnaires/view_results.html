@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Test Results{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Results Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ attempt.questionnaire.title }}</h1>
+                <p class="text-gray-600">Submitted by: {{ attempt.user.get_full_name }}</p>
+                <p class="text-sm text-gray-500">Submitted: {{ attempt.submitted_at|date:"F d, Y H:i" }}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-600 mb-1">Score</p>
+                <p class="text-4xl font-bold text-blue-600">{{ attempt.score|default:"--" }} / {{ attempt.total_marks }}</p>
+                {% if attempt.score %}
+                <p class="text-sm text-gray-500 mt-2">{{ attempt.score|floatformat:1 }}%</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-6 grid grid-cols-3 gap-4">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <p class="text-sm text-blue-600 mb-1">Time Taken</p>
+                <p class="text-2xl font-bold text-blue-900">{{ attempt.time_taken_minutes|default:"--" }} min</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <p class="text-sm text-green-600 mb-1">Status</p>
+                <p class="text-xl font-bold text-green-900">{{ attempt.get_status_display }}</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+                <p class="text-sm text-purple-600 mb-1">Questions</p>
+                <p class="text-2xl font-bold text-purple-900">{{ responses.count }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rating Section -->
+    {% if rating %}
+    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg shadow-md p-6 mb-8 text-white">
+        <h2 class="text-2xl font-bold mb-2">
+            <i class="fas fa-star mr-2"></i>Rating
+        </h2>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+            <div>
+                <p class="text-yellow-100 mb-1">Score</p>
+                <p class="text-3xl font-bold">{{ rating.score }} / 100</p>
+            </div>
+            <div>
+                <p class="text-yellow-100 mb-1">Rated By</p>
+                <p class="text-xl font-semibold">{{ rating.rated_by.get_full_name }}</p>
+            </div>
+        </div>
+        {% if rating.comment %}
+        <div class="mt-4 bg-white bg-opacity-20 rounded-lg p-4">
+            <p class="text-yellow-100 text-sm mb-1">Comment:</p>
+            <p class="text-white">{{ rating.comment }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Admin/Volunteer Rating Button -->
+    {% if user.is_volunteer_role and attempt.status == 'SUBMITTED' %}
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-blue-800 font-medium">This submission needs to be rated</p>
+                <p class="text-blue-600 text-sm">You can provide a score and feedback</p>
+            </div>
+            <a href="{% url 'ratings:rate_attempt' attempt.id %}" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md">
+                <i class="fas fa-star mr-2"></i>Rate Now
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Responses -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-clipboard-check text-green-600 mr-2"></i>Your Answers
+        </h2>
+        
+        <div class="space-y-6">
+            {% for response in responses %}
+            <div class="border-l-4 {% if response.is_correct %}border-green-500{% elif response.is_correct == False %}border-red-500{% else %}border-gray-300{% endif %} pl-4">
+                <div class="flex items-start">
+                    <span class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 font-bold mr-4">
+                        {{ forloop.counter }}
+                    </span>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ response.question.question_text }}</h3>
+                        
+                        {% if response.question.question_image %}
+                        <img src="{{ response.question.question_image.url }}" alt="Question" class="max-w-md rounded-lg mb-3">
+                        {% endif %}
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg mb-2">
+                            <p class="text-sm font-medium text-gray-700 mb-2">Your Answer:</p>
+                            
+                            {% if response.selected_option %}
+                            <p class="text-gray-900">{{ response.selected_option.option_text }}</p>
+                            {% if response.selected_option.option_image %}
+                            <img src="{{ response.selected_option.option_image.url }}" alt="Selected Option" class="max-w-xs rounded mt-2">
+                            {% endif %}
+                            {% elif response.text_response %}
+                            <p class="text-gray-900">{{ response.text_response }}</p>
+                            {% else %}
+                            <p class="text-gray-500 italic">No answer provided</p>
+                            {% endif %}
+                        </div>
+                        
+                        {% if response.is_correct != None %}
+                        <div class="flex items-center mt-2">
+                            {% if response.is_correct %}
+                            <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                                <i class="fas fa-check-circle mr-1"></i>Correct
+                            </span>
+                            {% else %}
+                            <span class="px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full">
+                                <i class="fas fa-times-circle mr-1"></i>Incorrect
+                            </span>
+                            {% endif %}
+                            <span class="ml-4 text-sm text-gray-600">
+                                Marks: {{ response.marks_obtained|default:"0" }} / {{ response.question.marks }}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="mt-8 flex justify-between">
+        <a href="{% url 'questionnaires:my_attempts' %}" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            <i class="fas fa-arrow-left mr-2"></i>Back to My Attempts
+        </a>
+        {% if user.id == attempt.user.id %}
+        <a href="{% url 'analytics:user_analytics' user.id %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700">
+            <i class="fas fa-chart-line mr-2"></i>View My Analytics
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

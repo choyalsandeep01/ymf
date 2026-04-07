@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ camp }} - Camp Analytics{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Camp Header -->
+    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-xl p-6 mb-8 text-white">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">
+                    <i class="fas fa-campground mr-2"></i>{{ camp }}
+                </h1>
+                <p class="text-green-100">
+                    <i class="fas fa-calendar mr-2"></i>
+                    {{ camp.start_date|date:"F d, Y" }} - {{ camp.end_date|date:"F d, Y" }}
+                </p>
+            </div>
+            <a href="{% url 'analytics:batch_analytics' camp.batch.id %}" class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md text-white font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Batch
+            </a>
+        </div>
+    </div>
+    
+    <!-- Camp Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Total Sessions</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ total_sessions }}</p>
+                </div>
+                <div class="bg-blue-100 rounded-full p-4">
+                    <i class="fas fa-list-ol text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Total Attempts</p>
+                    <p class="text-3xl font-bold text-green-600">{{ total_attempts }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Pre: {{ total_pre_attempts }} | Post: {{ total_post_attempts }}</p>
+                </div>
+                <div class="bg-green-100 rounded-full p-4">
+                    <i class="fas fa-clipboard-check text-green-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Pre-Test Avg</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ overall_pre_avg }}%</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ total_pre_attempts }} attempts</p>
+                </div>
+                <div class="bg-blue-100 rounded-full p-4">
+                    <i class="fas fa-clipboard-check text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Post-Test Avg</p>
+                    <p class="text-3xl font-bold text-green-600">{{ overall_post_avg }}%</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ total_post_attempts }} attempts</p>
+                </div>
+                <div class="bg-green-100 rounded-full p-4">
+                    <i class="fas fa-clipboard-list text-green-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Session Performance Chart -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-chart-bar text-blue-600 mr-2"></i>Pre-Test vs Post-Test Performance by Session
+        </h2>
+        <canvas id="sessionPerformanceChart" height="80"></canvas>
+    </div>
+    
+    <!-- Sessions Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-gray-50 px-6 py-4 border-b">
+            <h2 class="text-xl font-bold text-gray-900">
+                <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>Detailed Session Breakdown
+            </h2>
+        </div>
+        
+        {% if session_data %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Session</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Pre-Test</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Post-Test</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Improvement</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for data in session_data %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold">
+                                {{ data.session.session_number }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ data.session.title }}</div>
+                            <div class="text-sm text-gray-500">{{ data.session.description|truncatewords:8 }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ data.session.session_date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="text-sm font-bold text-blue-600">{{ data.pre_avg_score }}%</div>
+                            <div class="text-xs text-gray-500">{{ data.pre_attempts }} attempt{{ data.pre_attempts|pluralize }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="text-sm font-bold text-green-600">{{ data.post_avg_score }}%</div>
+                            <div class="text-xs text-gray-500">{{ data.post_attempts }} attempt{{ data.post_attempts|pluralize }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            {% with improvement=data.post_avg_score|add:"-"|add:data.pre_avg_score %}
+                            <div class="flex items-center justify-center">
+                                {% if improvement > 0 %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-arrow-up mr-1"></i>+{{ improvement }}%
+                                </span>
+                                {% elif improvement < 0 %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-arrow-down mr-1"></i>{{ improvement }}%
+                                </span>
+                                {% else %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">
+                                    <i class="fas fa-minus mr-1"></i>0%
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% endwith %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center">
+            <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+            <p class="text-gray-500">No session data available for this camp.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Pre vs Post Test Summary -->
+    {% if session_data %}
+    <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-balance-scale text-green-600 mr-2"></i>Overall Pre-Test vs Post-Test Summary
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="border-2 border-blue-200 rounded-lg p-6 bg-blue-50">
+                <h3 class="text-lg font-semibold text-blue-900 mb-4">
+                    <i class="fas fa-clipboard-check mr-2"></i>Pre-Tests
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700">Total Attempts:</span>
+                        <span class="font-bold text-blue-600 text-xl">{{ total_pre_attempts }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700">Average Score:</span>
+                        <span class="font-bold text-blue-600 text-xl">{{ overall_pre_avg }}%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700">Sessions Covered:</span>
+                        <span class="font-bold text-blue-600">{{ total_sessions }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-2 border-green-200 rounded-lg p-6 bg-green-50">
+                <h3 class="text-lg font-semibold text-green-900 mb-4">
+                    <i class="fas fa-clipboard-list mr-2"></i>Post-Tests
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700">Total Attempts:</span>
+                        <span class="font-bold text-green-600 text-xl">{{ total_post_attempts }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700">Average Score:</span>
+                        <span class="font-bold text-green-600 text-xl">{{ overall_post_avg }}%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700">Sessions Covered:</span>
+                        <span class="font-bold text-green-600">{{ total_sessions }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% with improvement=overall_post_avg|add:"-"|add:overall_pre_avg %}
+        <div class="mt-6 p-4 {% if improvement > 0 %}bg-green-50 border-l-4 border-green-400{% elif improvement < 0 %}bg-red-50 border-l-4 border-red-400{% else %}bg-yellow-50 border-l-4 border-yellow-400{% endif %} rounded-r-lg">
+            <div class="flex items-center">
+                <i class="fas {% if improvement > 0 %}fa-trophy text-green-600{% elif improvement < 0 %}fa-exclamation-triangle text-red-600{% else %}fa-minus-circle text-yellow-600{% endif %} text-2xl mr-3"></i>
+                <div>
+                    <p class="text-sm font-medium {% if improvement > 0 %}text-green-800{% elif improvement < 0 %}text-red-800{% else %}text-yellow-800{% endif %}">
+                        {% if improvement > 0 %}
+                        Overall Improvement: +{{ improvement }}%
+                        {% elif improvement < 0 %}
+                        Overall Decline: {{ improvement }}%
+                        {% else %}
+                        No Change: Same performance
+                        {% endif %}
+                    </p>
+                    <p class="text-xs {% if improvement > 0 %}text-green-700{% elif improvement < 0 %}text-red-700{% else %}text-yellow-700{% endif %} mt-1">
+                        Average score comparison between pre-tests and post-tests across all sessions.
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('sessionPerformanceChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    const sessionLabels = [
+        {% for data in session_data %}
+        "Session {{ data.session.session_number }}",
+        {% endfor %}
+    ];
+    
+    const preScores = [
+        {% for data in session_data %}
+        {{ data.pre_avg_score }},
+        {% endfor %}
+    ];
+    
+    const postScores = [
+        {% for data in session_data %}
+        {{ data.post_avg_score }},
+        {% endfor %}
+    ];
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sessionLabels,
+            datasets: [
+                {
+                    label: 'Pre-Test Score (%)',
+                    data: preScores,
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                    borderColor: 'rgb(59, 130, 246)',
+                    borderWidth: 2,
+                },
+                {
+                    label: 'Post-Test Score (%)',
+                    data: postScores,
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    borderColor: 'rgb(16, 185, 129)',
+                    borderWidth: 2,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toFixed(1) + '%';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Average Score (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Sessions'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

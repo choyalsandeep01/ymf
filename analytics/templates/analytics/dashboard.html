@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-xl p-6 mb-8 text-white">
+        <h1 class="text-3xl font-bold mb-2">
+            <i class="fas fa-chart-bar mr-2"></i>Analytics Dashboard
+        </h1>
+        <p class="text-purple-100">Comprehensive platform analytics and insights</p>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3">
+                    <i class="fas fa-users text-blue-600 text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-600">Total Batches</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ batches.count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-green-100 rounded-lg p-3">
+                    <i class="fas fa-user-graduate text-green-600 text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-600">Active Students</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_students }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-yellow-100 rounded-lg p-3">
+                    <i class="fas fa-clipboard-list text-yellow-600 text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-600">Total Attempts</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_attempts }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-purple-100 rounded-lg p-3">
+                    <i class="fas fa-star text-purple-600 text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-600">Avg Score</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ avg_score|floatformat:1 }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Batches List -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-gray-50 px-6 py-4 border-b">
+            <h2 class="text-xl font-bold text-gray-900">
+                <i class="fas fa-users text-blue-600 mr-2"></i>All Batches
+            </h2>
+        </div>
+        
+        {% if batches %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for batch in batches %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ batch.name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ batch.start_date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                {{ batch.batch_users.count }} students
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if batch.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {% if batch.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'analytics:batch_analytics' batch.id %}" class="text-blue-600 hover:text-blue-900">
+                                <i class="fas fa-chart-line mr-1"></i>View Analytics
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center">
+            <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+            <p class="text-gray-500">No batches created yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

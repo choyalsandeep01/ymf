@@ -1,0 +1,48 @@
+campproject/
+├── manage.py
+├── campproject/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+├── accounts/
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── forms.py
+│   ├── admin.py
+│   └── templates/accounts/
+├── core/
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── forms.py
+│   ├── admin.py
+│   └── templates/core/
+├── questionnaires/
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── forms.py
+│   ├── admin.py
+│   └── templates/questionnaires/
+├── ratings/
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   └── admin.py
+├── analytics/
+│   ├── views.py
+│   ├── urls.py
+│   └── templates/analytics/
+├── static/
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── media/
+│   ├── questionnaires/
+│   ├── media_submissions/
+│   └── profile_pics/
+└── templates/
+    └── base.html

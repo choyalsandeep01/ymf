@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ batch.name }} - Batch Details{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Batch Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-users text-blue-600 mr-2"></i>{{ batch.name }}
+                </h1>
+                <p class="text-gray-600">{{ batch.description }}</p>
+                <div class="mt-4 flex space-x-6">
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-calendar-start mr-2"></i>
+                        Start: {{ batch.start_date|date:"F d, Y" }}
+                    </p>
+                    {% if batch.end_date %}
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-calendar-check mr-2"></i>
+                        End: {{ batch.end_date|date:"F d, Y" }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            <span class="px-4 py-2 rounded-full text-sm font-semibold {% if batch.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                {% if batch.is_active %}<i class="fas fa-check-circle mr-1"></i>Active{% else %}<i class="fas fa-pause-circle mr-1"></i>Inactive{% endif %}
+            </span>
+        </div>
+    </div>
+    
+    <!-- Camps Section -->
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+        <i class="fas fa-campground text-green-600 mr-2"></i>Camps
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {% for camp in camps %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 px-4 py-3">
+                <h3 class="text-xl font-bold text-white">Camp {{ camp.camp_number }}</h3>
+            </div>
+            <div class="p-4">
+                <p class="text-sm text-gray-600 mb-3">
+                    <i class="fas fa-calendar mr-2"></i>
+                    {{ camp.start_date|date:"M d" }} - {{ camp.end_date|date:"M d, Y" }}
+                </p>
+                <p class="text-sm text-gray-600 mb-4">
+                    <i class="fas fa-list-ol mr-2"></i>
+                    {{ camp.sessions.count }} Sessions
+                </p>
+                <a href="{% url 'core:camp_detail' camp.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md w-full justify-center">
+                    <i class="fas fa-arrow-right mr-2"></i>View Camp
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Intercamp Activities -->
+    {% if intercamp_activities %}
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+        <i class="fas fa-tasks text-purple-600 mr-2"></i>Intercamp Activities
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for activity in intercamp_activities %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-3">
+                <h3 class="text-lg font-bold text-white">{{ activity.title }}</h3>
+                <p class="text-purple-100 text-sm">After Camp {{ activity.after_camp }}</p>
+            </div>
+            <div class="p-4">
+                <p class="text-gray-600 mb-4">{{ activity.description|truncatewords:20 }}</p>
+                <p class="text-sm text-gray-500 mb-4">
+                    <i class="fas fa-calendar mr-2"></i>
+                    {{ activity.start_date|date:"M d" }} - {{ activity.end_date|date:"M d, Y" }}
+                </p>
+                <a href="{% url 'core:intercamp_activity_detail' activity.id %}" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md">
+                    <i class="fas fa-arrow-right mr-2"></i>View Activity
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

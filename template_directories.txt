@@ -1,0 +1,40 @@
+campproject/
+├── templates/
+│   └── base.html
+├── accounts/
+│   └── templates/
+│       └── accounts/
+│           ├── signup.html
+│           ├── login.html
+│           └── profile.html
+├── core/
+│   └── templates/
+│       └── core/
+│           ├── homepage.html
+│           ├── submit_application.html
+│           ├── batch_detail.html
+│           ├── camp_detail.html
+│           ├── session_detail.html
+│           ├── intercamp_activity.html
+│           ├── submit_media.html
+│           └── my_progress.html
+├── questionnaires/
+│   └── templates/
+│       └── questionnaires/
+│           ├── questionnaire_list.html
+│           ├── attempt_questionnaire.html
+│           ├── view_results.html
+│           └── my_attempts.html
+├── ratings/
+│   └── templates/
+│       └── ratings/
+│           ├── rate_attempt.html
+│           ├── rate_media.html
+│           └── pending_ratings.html
+└── analytics/
+    └── templates/
+        └── analytics/
+            ├── dashboard.html
+            ├── batch_analytics.html
+            ├── user_analytics.html
+            └── camp_analytics.html

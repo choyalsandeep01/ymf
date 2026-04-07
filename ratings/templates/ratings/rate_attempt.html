@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Rate Attempt{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 px-6 py-4">
+            <h2 class="text-2xl font-bold text-white">
+                <i class="fas fa-star mr-2"></i>Rate Questionnaire Attempt
+            </h2>
+            <p class="text-yellow-100 mt-1">{{ attempt.user.get_full_name }} - {{ attempt.questionnaire.title }}</p>
+        </div>
+        
+        <div class="p-6">
+            <!-- Attempt Info -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Submitted</p>
+                        <p class="font-semibold text-gray-900">{{ attempt.submitted_at|date:"M d, Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Current Score</p>
+                        <p class="font-semibold text-gray-900">{{ attempt.score|default:"--" }} / {{ attempt.total_marks }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Time Taken</p>
+                        <p class="font-semibold text-gray-900">{{ attempt.time_taken_minutes|default:"--" }} min</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rating Form -->
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Score (0-100) *
+                    </label>
+                    <input type="number" name="score" min="0" max="100" required 
+                           value="{% if existing_rating %}{{ existing_rating.score }}{% endif %}"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-lg py-3 px-4">
+                    <p class="mt-2 text-sm text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Provide an overall score out of 100 for this submission
+                    </p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Comment / Feedback
+                    </label>
+                    <textarea name="comment" rows="6" 
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                              placeholder="Provide detailed feedback on the student's performance...">{% if existing_rating %}{{ existing_rating.comment }}{% endif %}</textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-4 pt-4 border-t">
+                    <a href="{% url 'ratings:pending_ratings' %}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-6 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 font-medium">
+                        <i class="fas fa-star mr-2"></i>
+                        {% if existing_rating %}Update Rating{% else %}Submit Rating{% endif %}
+                    </button>
+                </div>
+            </form>
+            
+            <!-- View Responses -->
+            <div class="mt-8 pt-6 border-t">
+                <a href="{% url 'questionnaires:view_results' attempt.id %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md">
+                    <i class="fas fa-eye mr-2"></i>View Student Responses
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

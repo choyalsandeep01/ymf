@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ session.title }} - Session Details{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Session Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <span class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold">
+                    {{ session.session_number }}
+                </span>
+            </div>
+            <div class="ml-6 flex-1">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ session.title }}</h1>
+                <p class="text-gray-600 mb-4">{{ session.description }}</p>
+                <p class="text-sm text-gray-500">
+                    <i class="fas fa-calendar mr-2"></i>
+                    {{ session.session_date|date:"l, F d, Y" }}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pre-Tests -->
+    {% if pre_tests %}
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-clipboard-check text-blue-600 mr-2"></i>Pre-Tests
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for test in pre_tests %}
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ test.title }}</h3>
+                <p class="text-sm text-gray-600 mb-4">{{ test.description|truncatewords:15 }}</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs px-2 py-1 rounded {% if test.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {% if test.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                    {% if test.is_active %}
+                    <a href="{% url 'questionnaires:start_questionnaire' test.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+                        <i class="fas fa-play mr-2"></i>Start Test
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Post-Tests -->
+    {% if post_tests %}
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-clipboard-check text-green-600 mr-2"></i>Post-Tests
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for test in post_tests %}
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ test.title }}</h3>
+                <p class="text-sm text-gray-600 mb-4">{{ test.description|truncatewords:15 }}</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs px-2 py-1 rounded {% if test.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {% if test.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                    {% if test.is_active %}
+                    <a href="{% url 'questionnaires:start_questionnaire' test.id %}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md">
+                        <i class="fas fa-play mr-2"></i>Start Test
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if not pre_tests and not post_tests %}
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+        <p class="text-yellow-700">
+            <i class="fas fa-info-circle mr-2"></i>
+            No questionnaires have been created for this session yet.
+        </p>
+    </div>
+    {% endif %}
+    
+    <div class="mt-8">
+        <a href="{% url 'core:camp_detail' session.camp.id %}" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Camp
+        </a>
+    </div>
+</div>
+{% endblock %}

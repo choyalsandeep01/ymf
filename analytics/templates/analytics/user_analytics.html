@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.get_full_name }} - Analytics{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- User Header -->
+    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-xl p-6 mb-8 text-white">
+        <div class="flex justify-between items-start">
+            <div class="flex items-center">
+                <div class="bg-white bg-opacity-20 rounded-full p-4 mr-4">
+                    <i class="fas fa-user-graduate text-4xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">{{ profile_user.get_full_name }}</h1>
+                    <p class="text-green-100">@{{ profile_user.username }} • {{ profile_user.email }}</p>
+                </div>
+            </div>
+            {% if user.is_admin_role %}
+            <a href="{% url 'analytics:dashboard' %}" class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md text-white font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>Back
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm text-gray-600">Total Attempts</p>
+                <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+            </div>
+            <p class="text-3xl font-bold text-blue-600">{{ total_attempts }}</p>
+            <p class="text-xs text-gray-500 mt-1">Pre: {{ pre_count }} | Post: {{ post_count }}</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm text-gray-600">Average Score</p>
+                <i class="fas fa-chart-line text-green-600 text-xl"></i>
+            </div>
+            <p class="text-3xl font-bold text-green-600">{{ avg_score }}%</p>
+            <p class="text-xs text-gray-500 mt-1">Across all tests</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm text-gray-600">Pre-Test Avg</p>
+                <i class="fas fa-clipboard-check text-blue-600 text-xl"></i>
+            </div>
+            <p class="text-3xl font-bold text-blue-600">{{ pre_avg }}%</p>
+            <p class="text-xs text-gray-500 mt-1">{{ pre_count }} attempt{{ pre_count|pluralize }}</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm text-gray-600">Post-Test Avg</p>
+                <i class="fas fa-trophy text-green-600 text-xl"></i>
+            </div>
+            <p class="text-3xl font-bold text-green-600">{{ post_avg }}%</p>
+            <p class="text-xs text-gray-500 mt-1">{{ post_count }} attempt{{ post_count|pluralize }}</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm text-gray-600">Time Spent</p>
+                <i class="fas fa-clock text-purple-600 text-xl"></i>
+            </div>
+            <p class="text-3xl font-bold text-purple-600">{{ total_time }}</p>
+            <p class="text-xs text-gray-500 mt-1">minutes total</p>
+        </div>
+    </div>
+    
+    <!-- Performance Comparison -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <!-- Progress Chart -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-chart-area text-green-600 mr-2"></i>Score Progression
+        </h2>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="userProgressChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Pre vs Post Comparison -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-balance-scale text-blue-600 mr-2"></i>Pre vs Post Performance
+        </h2>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="prePostChart"></canvas>
+        </div>
+    </div>
+</div>
+
+    <!-- Batch Enrollment -->
+    {% if user_batches %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-users text-blue-600 mr-2"></i>Batch Enrollment
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for ub in user_batches %}
+            <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ ub.batch.name }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <i class="fas fa-calendar mr-1"></i>Enrolled: {{ ub.enrolled_at|date:"F d, Y" }}
+                        </p>
+                    </div>
+                    <span class="px-3 py-1 text-sm font-semibold rounded-full
+                        {% if ub.current_camp == 0 %}bg-blue-100 text-blue-800
+                        {% elif ub.current_camp > 3 %}bg-green-100 text-green-800
+                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {% if ub.current_camp == 0 %}Pre-Camp
+                        {% elif ub.current_camp > 3 %}Completed
+                        {% else %}Camp {{ ub.current_camp }}{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Ratings Received -->
+    {% if ratings %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-star text-yellow-500 mr-2"></i>Ratings Received
+            <span class="text-lg text-gray-600 ml-2">(Avg: {{ avg_rating }}/100)</span>
+        </h2>
+        <div class="space-y-4">
+            {% for rating in ratings %}
+            <div class="border-l-4 {% if rating.score >= 75 %}border-green-500{% elif rating.score >= 50 %}border-yellow-500{% else %}border-red-500{% endif %} bg-gray-50 p-4 rounded-r-lg">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">{{ rating.questionnaire_attempt.questionnaire.title }}</h3>
+                        <p class="text-sm text-gray-600">
+                            <i class="fas fa-user mr-1"></i>Rated by: 
+                            {% if rating.rated_by %}
+                                {{ rating.rated_by.username  }}
+                            {% else %}
+                                <span class="font-semibold text-blue-600">Admin</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-2xl font-bold {% if rating.score >= 75 %}text-green-600{% elif rating.score >= 50 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                            {{ rating.score }}/100
+                        </span>
+                        <p class="text-xs text-gray-500">{{ rating.created_at|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+                {% if rating.comment %}
+                <div class="mt-2 p-3 bg-white rounded border border-gray-200">
+                    <p class="text-sm text-gray-700"><i class="fas fa-comment mr-2 text-blue-500"></i>{{ rating.comment }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Recent Attempts -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-gray-50 px-6 py-4 border-b">
+            <h2 class="text-xl font-bold text-gray-900">
+                <i class="fas fa-clipboard-list text-purple-600 mr-2"></i>Recent Attempts (Last 20)
+            </h2>
+        </div>
+        
+        {% if attempts %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questionnaire</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for attempt in attempts %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ attempt.questionnaire.title }}</div>
+                            <div class="text-xs text-gray-500">{{ attempt.questionnaire.description|truncatewords:8 }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if attempt.questionnaire.test_type == 'PRE' %}bg-blue-100 text-blue-800
+                                {% elif attempt.questionnaire.test_type == 'POST' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ attempt.questionnaire.get_test_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="text-sm font-bold text-gray-900">{{ attempt.score|default:"--" }}%</div>
+                            <div class="text-xs text-gray-500">/ {{ attempt.total_marks }} marks</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="text-sm text-gray-600">
+                                {% if attempt.time_taken_minutes %}
+                                {{ attempt.time_taken_minutes }} min
+                                {% else %}--{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ attempt.submitted_at|date:"M d, Y H:i" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                            <a href="{% url 'questionnaires:view_results' attempt.id %}" class="text-blue-600 hover:text-blue-900">
+                                <i class="fas fa-eye mr-1"></i>View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center">
+            <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+            <p class="text-gray-500">No attempts recorded yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Parse chart data from context
+    const chartData = {{ chart_data|safe }};
+    
+    // Score Progression Chart
+    const progressCtx = document.getElementById('userProgressChart');
+    if (progressCtx) {
+        new Chart(progressCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Score (%)',
+                    data: chartData.scores,
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 2,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return chartData.labels[context[0].dataIndex];
+                            },
+                            label: function(context) {
+                                return 'Score: ' + context.parsed.y.toFixed(1) + '%';
+                            },
+                            afterLabel: function(context) {
+                                return 'Date: ' + chartData.dates[context.dataIndex];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Score (%)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            font: {
+                                size: 10
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Questionnaires (Chronological)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Pre vs Post Comparison Chart
+    const prePostCtx = document.getElementById('prePostChart');
+    if (prePostCtx) {
+        new Chart(prePostCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Pre-Tests', 'Post-Tests'],
+                datasets: [{
+                    label: 'Average Score (%)',
+                    data: [{{ pre_avg }}, {{ post_avg }}],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(16, 185, 129)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 2,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Average: ' + context.parsed.y.toFixed(1) + '%';
+                            },
+                            afterLabel: function(context) {
+                                const counts = [{{ pre_count }}, {{ post_count }}];
+                                return 'Attempts: ' + counts[context.dataIndex];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Average Score (%)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
