@@ -6,6 +6,7 @@ app_name = 'core'
 urlpatterns = [
     path('', views.homepage, name='homepage'),
     path('submit-application/', views.submit_application, name='submit_application'),
+    path('autosave-draft/', views.autosave_draft, name='autosave_draft'),   # ← NEW
     path('batch/<int:batch_id>/', views.batch_detail, name='batch_detail'),
     path('camp/<int:camp_id>/', views.camp_detail, name='camp_detail'),
     path('session/<int:session_id>/', views.session_detail, name='session_detail'),

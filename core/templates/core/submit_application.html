@@ -1,89 +1,1137 @@
 {% extends 'base.html' %}
-
-{% block title %}Submit Application{% endblock %}
+{% block title %}Submit Application — GTP Camp{% endblock %}
 
 {% block content %}
+<div class="min-h-screen bg-slate-50 py-8 px-4">
 <div class="max-w-3xl mx-auto">
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
-            <h2 class="text-2xl font-bold text-white">
-                <i class="fas fa-file-alt mr-2"></i>Application Form
-            </h2>
-            <p class="text-blue-100 mt-1">Please fill in all the required information</p>
-        </div>
-        
-        <form method="POST" class="p-6 space-y-6">
-            {% csrf_token %}
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                    {{ form.full_name }}
-                    {% if form.full_name.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.full_name.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
-                    {{ form.phone }}
-                    {% if form.phone.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Qualification *</label>
-                    {{ form.qualification }}
-                    {% if form.qualification.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.qualification.errors.0 }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
-                {{ form.address }}
-                {% if form.address.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
-                {% endif %}
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Why do you want to join? *</label>
-                {{ form.why_join }}
-                {% if form.why_join.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.why_join.errors.0 }}</p>
-                {% endif %}
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Experience (Optional)</label>
-                {{ form.experience }}
-                {% if form.experience.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.experience.errors.0 }}</p>
-                {% endif %}
-            </div>
-            
-            <div class="flex justify-end space-x-4 pt-4 border-t">
-                <a href="{% url 'core:homepage' %}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                    Cancel
-                </a>
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    <i class="fas fa-paper-plane mr-2"></i>Submit Application
-                </button>
-            </div>
-        </form>
+
+  <!-- ───────────────── PAGE HEADER ───────────────── -->
+  <div class="mb-6">
+    <div class="flex items-center space-x-2 mb-3 text-xs text-slate-400">
+      <a href="{% url 'core:homepage' %}" class="hover:text-slate-600 flex items-center transition-colors">
+        <i class="fas fa-home mr-1"></i> Home
+      </a>
+      <span>/</span>
+      <span class="text-slate-500">Application</span>
     </div>
+    <div class="flex items-start justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800" id="page-title">GTP Camp Application</h1>
+        <p class="text-slate-500 text-sm mt-1" id="page-sub">Start by selecting your preferred camp location.</p>
+      </div>
+      <!-- Language Toggle -->
+      <div class="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex-shrink-0 ml-4">
+        <button type="button" id="lang-en"
+                class="lang-btn px-4 py-2 text-xs font-semibold transition-colors duration-150 bg-blue-600 text-white">
+          🇬🇧 English
+        </button>
+        <button type="button" id="lang-hi"
+                class="lang-btn px-4 py-2 text-xs font-semibold transition-colors duration-150 text-slate-500 hover:bg-slate-50">
+          🇮🇳 हिंदी
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── RESUME BANNER (live-updated by JS) ───────────────── -->
+  <div id="draft-banner" class="{% if draft_step > 0 %}{% else %}hidden{% endif %} mb-5 bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <i class="fas fa-history text-amber-500"></i>
+      <div>
+        <p class="text-sm font-semibold text-amber-800 en-text">Draft saved — resume where you left off</p>
+        <p class="text-sm font-semibold text-amber-800 hi-text hidden">ड्राफ्ट सहेजा गया — जहाँ छोड़ा था वहीं से जारी रखें</p>
+        <p class="text-xs text-amber-600 mt-0.5">
+          <span id="draft-banner-loc">—</span>
+          <span class="mx-1">·</span>
+          <span id="draft-banner-step">{% if draft_step > 0 %}Step {{ draft_step }} of {{ sections|length|add:"1" }}{% endif %}</span>
+        </p>
+      </div>
+    </div>
+    <button type="button" id="resume-btn"
+            class="text-xs font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">
+      Resume <i class="fas fa-arrow-right ml-1"></i>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       STEP PROGRESS INDICATOR
+  ════════════════════════════════════════════════ -->
+  <div id="step-progress-container" class="mb-6 hidden">
+    <div class="bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-slate-600 en-text">
+          Step <span id="cur-step-num">1</span> of <span id="total-step-num">1</span>
+        </span>
+        <span class="text-xs font-semibold text-slate-600 hi-text hidden">
+          चरण <span id="cur-step-num-hi">1</span> / <span id="total-step-num-hi">1</span>
+        </span>
+        <span id="progress-pct" class="text-xs font-bold text-blue-600">0%</span>
+      </div>
+      <div class="w-full bg-slate-100 rounded-full h-2 mb-3">
+        <div id="progress-bar" class="h-2 rounded-full bg-blue-600 transition-all duration-500 ease-out" style="width:0%"></div>
+      </div>
+      <!-- Step dots -->
+      <div id="step-dots" class="flex items-center space-x-1 flex-wrap gap-y-1"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       STEP 0 — LOCATION PICKER
+  ════════════════════════════════════════════════ -->
+  <div id="step-0" class="step-panel">
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+
+      <!-- Header -->
+      <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold">
+            <i class="fas fa-map-marker-alt text-xs"></i>
+          </span>
+          <div>
+            <h2 class="text-base font-semibold text-slate-800 en-text">Select Camp Location</h2>
+            <h2 class="text-base font-semibold text-slate-800 hi-text hidden">शिविर स्थान चुनें</h2>
+            <p class="text-xs text-slate-400 mt-0.5 en-text">Choose the state/centre where you want to attend</p>
+            <p class="text-xs text-slate-400 mt-0.5 hi-text hidden">वह राज्य/केंद्र चुनें जहाँ आप जाना चाहते हैं</p>
+          </div>
+        </div>
+        <span id="loc-confirmed-badge"
+              class="hidden items-center space-x-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+          <i class="fas fa-check-circle text-emerald-500"></i>
+          <span id="loc-confirmed-text">—</span>
+        </span>
+      </div>
+
+      <!-- Location Grid -->
+      <div class="px-6 py-5">
+        {% if locations %}
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="location-grid">
+          {% for loc in locations %}
+          <button type="button"
+                  data-loc-id="{{ loc.id }}"
+                  class="loc-card group text-left border border-slate-200 rounded-xl p-4 relative
+                         hover:border-blue-300 hover:shadow-sm transition-all duration-200
+                         focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1">
+            <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-blue-50
+                        flex items-center justify-center mb-3 transition-colors duration-200 loc-avatar">
+              <span class="text-xs font-bold text-slate-500 loc-initials">{{ loc.state }}</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-800 truncate leading-snug">{{ loc.name }}</p>
+            <p class="text-xs text-slate-400 mt-0.5">{{ loc.get_state_display }}</p>
+            <div class="mt-2 flex items-center space-x-1">
+              <i class="fas fa-users text-slate-300 text-xs"></i>
+              <span class="text-xs text-slate-400">{{ loc.capacity }} volunteers</span>
+            </div>
+            <div class="loc-check hidden absolute top-2 right-2 w-5 h-5 rounded-full
+                        bg-blue-600 items-center justify-center">
+              <i class="fas fa-check text-white" style="font-size:9px;"></i>
+            </div>
+          </button>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-10">
+          <i class="fas fa-map-marker-alt text-slate-200 text-4xl mb-3"></i>
+          <p class="text-sm font-medium text-slate-500 en-text">No locations available yet.</p>
+          <p class="text-sm font-medium text-slate-500 hi-text hidden">अभी कोई स्थान उपलब्ध नहीं है।</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Selected Location Info Card -->
+      <div id="location-info-card" class="hidden px-6 pb-5">
+        <div class="border border-slate-200 rounded-xl overflow-hidden">
+          <div class="bg-slate-800 px-4 py-3 flex items-center space-x-2">
+            <i class="fas fa-map-pin text-blue-400 text-sm"></i>
+            <span class="text-sm font-semibold text-white en-text">Selected Location</span>
+            <span class="text-sm font-semibold text-white hi-text hidden">चयनित स्थान</span>
+          </div>
+          <div class="bg-white px-4 py-4 grid grid-cols-3 divide-x divide-slate-100">
+            <div class="pr-4">
+              <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1 en-text">Centre</p>
+              <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1 hi-text hidden">केंद्र</p>
+              <p class="text-sm font-semibold text-slate-800" id="loc-name">—</p>
+            </div>
+            <div class="px-4">
+              <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1 en-text">State</p>
+              <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1 hi-text hidden">राज्य</p>
+              <p class="text-sm font-semibold text-slate-800" id="loc-state">—</p>
+            </div>
+            <div class="pl-4">
+              <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1 en-text">Capacity</p>
+              <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1 hi-text hidden">क्षमता</p>
+              <p class="text-sm font-semibold text-slate-800" id="loc-capacity">—</p>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="proceed-btn"
+                class="mt-4 w-full inline-flex items-center justify-center px-6 py-3
+                       text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700
+                       rounded-xl transition duration-150 focus:outline-none focus:ring-2
+                       focus:ring-blue-500 focus:ring-offset-2">
+          <span class="en-text"><i class="fas fa-arrow-right mr-2"></i>Continue — Fill Application Form</span>
+          <span class="hi-text hidden"><i class="fas fa-arrow-right mr-2"></i>जारी रखें — फॉर्म भरें</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       DYNAMIC SECTION STEPS
+  ════════════════════════════════════════════════ -->
+  <form method="POST" id="application-form" novalidate class="hidden" autocomplete="off">
+    {% csrf_token %}
+    <input type="hidden" name="preferred_location" id="hidden-preferred-location">
+    <input type="hidden" name="language" id="hidden-language" value="en">
+
+    {% for section in sections %}
+    <div id="step-{{ forloop.counter }}" class="step-panel hidden">
+      <!-- Section Header -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+        <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-slate-50">
+          <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl
+                         bg-blue-600 text-white text-sm font-bold flex-shrink-0">
+              {{ forloop.counter }}
+            </span>
+            <div>
+              <h2 class="text-base font-semibold text-slate-800 en-text">{{ section.title_en }}</h2>
+              <h2 class="text-base font-semibold text-slate-800 hi-text hidden">{{ section.title_hi }}</h2>
+              {% if section.description_en %}
+              <p class="text-xs text-slate-500 mt-0.5 en-text">{{ section.description_en }}</p>
+              <p class="text-xs text-slate-500 mt-0.5 hi-text hidden">{{ section.description_hi }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Questions -->
+        <div class="px-6 py-6 space-y-7">
+          {% for q in section.questions.all %}
+          {% if q.is_active %}
+          <div class="question-block" data-qid="{{ q.id }}" data-required="{{ q.is_required|yesno:'true,false' }}" data-type="{{ q.question_type }}">
+
+            <!-- Question Label -->
+            <label class="block mb-2">
+              <span class="text-sm font-semibold text-slate-700 en-text">{{ q.question_en }}</span>
+              <span class="text-sm font-semibold text-slate-700 hi-text hidden">{{ q.question_hi }}</span>
+              {% if q.is_required %}<span class="text-red-500 ml-1">*</span>{% endif %}
+            </label>
+
+            {% if q.hint_en %}
+            <p class="text-xs text-slate-400 mb-2 en-text">{{ q.hint_en }}</p>
+            <p class="text-xs text-slate-400 mb-2 hi-text hidden">{{ q.hint_hi }}</p>
+            {% endif %}
+
+            <!-- TEXT / EMAIL / PHONE / NUMBER -->
+            {% if q.question_type == 'TEXT' or q.question_type == 'EMAIL' or q.question_type == 'PHONE' or q.question_type == 'NUMBER' %}
+            <input
+              type="{% if q.question_type == 'EMAIL' %}email{% elif q.question_type == 'NUMBER' %}number{% elif q.question_type == 'PHONE' %}tel{% else %}text{% endif %}"
+              name="q_{{ q.id }}" id="q_{{ q.id }}"
+              {% if not q.is_required %}data-optional="true"{% endif %}
+              class="form-input w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                     transition duration-150 placeholder-slate-400"
+              placeholder="">
+
+            <!-- TEXTAREA -->
+            {% elif q.question_type == 'TEXTAREA' %}
+            <textarea
+              name="q_{{ q.id }}" id="q_{{ q.id }}" rows="4"
+              {% if not q.is_required %}data-optional="true"{% endif %}
+              class="form-input w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                     transition duration-150 placeholder-slate-400 resize-y"></textarea>
+            <div class="flex justify-end mt-1">
+              <span class="text-xs text-slate-400 word-counter" data-for="q_{{ q.id }}">0 words</span>
+            </div>
+
+            <!-- DATE -->
+            {% elif q.question_type == 'DATE' %}
+            <input type="date" name="q_{{ q.id }}" id="q_{{ q.id }}"
+                   {% if not q.is_required %}data-optional="true"{% endif %}
+                   class="form-input w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150">
+
+            <!-- SINGLE CHOICE (Radio) -->
+            {% elif q.question_type == 'SINGLE' %}
+            <div class="space-y-2 option-group" data-qid="{{ q.id }}">
+              {% for opt in q.options.all %}
+              <label class="flex items-start space-x-3 cursor-pointer group">
+                <input type="radio" name="q_{{ q.id }}" value="{{ opt.id }}"
+                       {% if opt.is_other %}data-is-other="true"{% endif %}
+                       class="opt-radio mt-0.5 h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500 flex-shrink-0"
+                       style="margin-top:3px">
+                <span class="text-sm text-slate-700 group-hover:text-slate-900 transition-colors">
+                  <span class="en-text">{{ opt.option_en }}</span>
+                  <span class="hi-text hidden">{{ opt.option_hi }}</span>
+                </span>
+              </label>
+              {% if opt.is_other %}
+              <div class="other-input-wrap hidden ml-7 mt-1">
+                <input type="text" name="q_{{ q.id }}_other" placeholder="Please specify / कृपया बताएं"
+                       class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800
+                              focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-150">
+              </div>
+              {% endif %}
+              {% endfor %}
+            </div>
+
+            <!-- MULTIPLE CHOICE (Checkboxes) -->
+            {% elif q.question_type == 'MULTI' %}
+            <div class="space-y-2 option-group" data-qid="{{ q.id }}">
+              {% for opt in q.options.all %}
+              <label class="flex items-start space-x-3 cursor-pointer group">
+                <input type="checkbox" name="q_{{ q.id }}" value="{{ opt.id }}"
+                       {% if opt.is_other %}data-is-other="true"{% endif %}
+                       class="opt-checkbox mt-0.5 h-4 w-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 flex-shrink-0"
+                       style="margin-top:3px">
+                <span class="text-sm text-slate-700 group-hover:text-slate-900 transition-colors">
+                  <span class="en-text">{{ opt.option_en }}</span>
+                  <span class="hi-text hidden">{{ opt.option_hi }}</span>
+                </span>
+              </label>
+              {% if opt.is_other %}
+              <div class="other-input-wrap hidden ml-7 mt-1">
+                <input type="text" name="q_{{ q.id }}_other" placeholder="Please specify / कृपया बताएं"
+                       class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800
+                              focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-150">
+              </div>
+              {% endif %}
+              {% endfor %}
+            </div>
+
+            <!-- DROPDOWN SELECT -->
+            {% elif q.question_type == 'SELECT' %}
+            <div class="option-group" data-qid="{{ q.id }}">
+              <select name="q_{{ q.id }}" id="q_{{ q.id }}"
+                      {% if not q.is_required %}data-optional="true"{% endif %}
+                      class="form-input w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 bg-white">
+                <option value="">— Select an option —</option>
+                {% for opt in q.options.all %}
+                <option value="{{ opt.id }}" {% if opt.is_other %}data-is-other="true"{% endif %}>
+                  {{ opt.option_en }} / {{ opt.option_hi }}
+                </option>
+                {% endfor %}
+              </select>
+              {% for opt in q.options.all %}{% if opt.is_other %}
+              <div class="other-input-wrap hidden mt-2">
+                <input type="text" name="q_{{ q.id }}_other" placeholder="Please specify / कृपया बताएं"
+                       class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800
+                              focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-150">
+              </div>
+              {% endif %}{% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Error Message Slot -->
+            <p class="error-msg hidden mt-1.5 text-xs text-red-500 flex items-center">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              <span class="en-text">This field is required.</span>
+              <span class="hi-text hidden">यह फ़ील्ड आवश्यक है।</span>
+            </p>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Step Navigation -->
+      <div class="flex items-center justify-between mt-2 mb-6">
+        <button type="button" class="prev-btn inline-flex items-center px-5 py-2.5 text-sm font-semibold
+                text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl
+                transition duration-150 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <i class="fas fa-arrow-left mr-2"></i>
+          <span class="en-text">Previous</span><span class="hi-text hidden">पिछला</span>
+        </button>
+
+        {% if not forloop.last %}
+        <div class="flex items-center space-x-3">
+          <span id="autosave-indicator-{{ forloop.counter }}" class="text-xs text-slate-400 hidden">
+            <i class="fas fa-check-circle text-emerald-500 mr-1"></i>
+            <span class="en-text">Saved</span><span class="hi-text hidden">सहेजा</span>
+          </span>
+          <button type="button" class="next-btn inline-flex items-center px-6 py-2.5 text-sm font-semibold
+                  text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition duration-150
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <span class="en-text">Next</span><span class="hi-text hidden">अगला</span>
+            <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+        {% else %}
+        <button type="button" id="review-btn"
+                class="inline-flex items-center px-6 py-2.5 text-sm font-semibold
+                       text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition duration-150
+                       focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+          <i class="fas fa-eye mr-2"></i>
+          <span class="en-text">Review Application</span><span class="hi-text hidden">आवेदन की समीक्षा करें</span>
+        </button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- ═══════════════════════════════════════════════
+         REVIEW STEP
+    ════════════════════════════════════════════════ -->
+    <div id="step-review" class="step-panel hidden">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+        <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-emerald-50 to-slate-50 flex items-center space-x-3">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500 text-white">
+            <i class="fas fa-clipboard-check text-sm"></i>
+          </span>
+          <div>
+            <h2 class="text-base font-semibold text-slate-800 en-text">Review Your Application</h2>
+            <h2 class="text-base font-semibold text-slate-800 hi-text hidden">आपके आवेदन की समीक्षा करें</h2>
+            <p class="text-xs text-slate-500 mt-0.5 en-text">Check all answers before submitting. Click Edit to go back.</p>
+            <p class="text-xs text-slate-500 mt-0.5 hi-text hidden">जमा करने से पहले सभी उत्तर जाँचें।</p>
+          </div>
+        </div>
+        <div id="review-content" class="px-6 py-6 space-y-6"></div>
+      </div>
+
+      <!-- Declaration -->
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-4">
+        <div class="flex items-start space-x-3">
+          <i class="fas fa-shield-alt text-amber-500 mt-0.5 flex-shrink-0"></i>
+          <div>
+            <p class="text-sm font-semibold text-amber-800 mb-2">Declaration / घोषणा</p>
+            <p class="text-xs text-slate-600 en-text leading-relaxed">
+              I declare that I am coming to this camp on my own responsibility. I have taken permission from my parent/guardian and given them the necessary information. It will be entirely my responsibility if any problem arises from the time I leave my residence until I return safely. YuMetta Foundation will not be responsible for my actions in any way.
+            </p>
+            <p class="text-xs text-slate-600 hi-text hidden leading-relaxed mt-2">
+              मैं घोषणा करता/करती हूँ कि इस कैंप में स्वयं की जिम्मेदारी के साथ आ रहा/रही हूँ। मैंने अपने पालक/अभिभावक की अनुमति ले ली है। निवास से कैंप तक और वापस आने तक किसी भी दिक्कत की संपूर्ण जवाबदारी मेरी खुद की होगी। YuMetta Foundation की कोई जवाबदारी नहीं होगी।
+            </p>
+          </div>
+        </div>
+        <label class="flex items-center space-x-3 mt-4 cursor-pointer">
+          <input type="checkbox" id="declaration-check"
+                 class="h-4 w-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500">
+          <span class="text-sm font-medium text-slate-700 en-text">I agree to the above declaration</span>
+          <span class="text-sm font-medium text-slate-700 hi-text hidden">मैं उपरोक्त घोषणा से सहमत हूँ</span>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-between mb-6">
+        <button type="button" id="back-from-review"
+                class="inline-flex items-center px-5 py-2.5 text-sm font-semibold
+                       text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition duration-150">
+          <i class="fas fa-arrow-left mr-2"></i>
+          <span class="en-text">Back to Edit</span><span class="hi-text hidden">वापस संपादित करें</span>
+        </button>
+        <button type="submit" id="final-submit-btn" disabled
+                class="inline-flex items-center px-8 py-3 text-sm font-bold text-white
+                       bg-emerald-600 hover:bg-emerald-700 rounded-xl transition duration-150
+                       disabled:opacity-40 disabled:cursor-not-allowed
+                       focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+          <i class="fas fa-paper-plane mr-2"></i>
+          <span class="en-text">Submit Application</span><span class="hi-text hidden">आवेदन जमा करें</span>
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- Cancel link -->
+  <div class="flex items-center justify-between mt-3 px-1 pb-8">
+    <a href="{% url 'core:homepage' %}"
+       class="inline-flex items-center text-xs text-slate-400 hover:text-slate-600 transition-colors">
+      <i class="fas fa-times mr-1"></i>
+      <span class="en-text">Cancel and go back</span><span class="hi-text hidden">रद्द करें</span>
+    </a>
+    <p class="text-xs text-slate-400">
+      <i class="fas fa-shield-alt mr-1"></i>
+      <span class="en-text">Your information is kept confidential.</span>
+      <span class="hi-text hidden">आपकी जानकारी गोपनीय रखी जाती है।</span>
+    </p>
+  </div>
+
 </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     STYLES
+════════════════════════════════════════════════════════ -->
+<style>
+.step-panel { animation: none; }
+.step-panel.entering {
+  animation: stepEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes stepEnter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.form-input:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+.question-block.has-error .form-input,
+.question-block.has-error .opt-radio,
+.question-block.has-error .opt-checkbox { border-color: #f87171; }
+.question-block.has-error .error-msg { display: flex !important; }
+.loc-card { position: relative; }
+.step-dot { cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── Django → JS constants ─────────────────────────────────────── */
+  const LOCATIONS = {{ locations_json|safe }};
+  const AUTOSAVE_URL  = "{% url 'core:autosave_draft' %}";
+  const CSRF_TOKEN    = "{{ csrf_token }}";
+  const TOTAL_SECTIONS = {{ sections|length }};
+
+  // Parse draft answers safely
+  const DRAFT_ANSWERS = (function () {
+    try { return JSON.parse('{{ draft_answers_json|escapejs }}') || {}; } catch (e) { return {}; }
+  })();
+  const DRAFT_LOCATION = "{{ draft_location|default:'' }}";
+  const DRAFT_STEP     = parseInt("{{ draft_step|default:0 }}") || 0;
+  const HAS_DRAFT      = DRAFT_STEP > 0 || DRAFT_LOCATION !== '';
+
+  /* ── Mutable state ─────────────────────────────────────────────── */
+  let currentStep   = 0;
+  let selectedLocId = '';
+  let currentLang   = '{{ draft_language|default:"en" }}';
+  let autosaveTimer = null;
+
+  // completedSteps tracks which section numbers the user has successfully
+  // clicked Next/Review on — this is the ONLY source of truth for progress bar
+  const completedSteps = new Set();
+
+  /* ── Element refs ──────────────────────────────────────────────── */
+  const form          = document.getElementById('application-form');
+  const hiddenLoc     = document.getElementById('hidden-preferred-location');
+  const hiddenLang    = document.getElementById('hidden-language');
+  const progressCont  = document.getElementById('step-progress-container');
+  const progressBar   = document.getElementById('progress-bar');
+  const progressPct   = document.getElementById('progress-pct');
+  const curStepNum    = document.getElementById('cur-step-num');
+  const curStepNumHi  = document.getElementById('cur-step-num-hi');
+  const totalStepNum  = document.getElementById('total-step-num');
+  const totalStepNumHi= document.getElementById('total-step-num-hi');
+  const stepDots      = document.getElementById('step-dots');
+  const declarationChk= document.getElementById('declaration-check');
+  const finalSubmitBtn= document.getElementById('final-submit-btn');
+
+  /* ══════════════════════════════════════════════════════
+     LANGUAGE
+  ══════════════════════════════════════════════════════ */
+  function setLanguage(lang) {
+    currentLang = lang;
+    if (hiddenLang) hiddenLang.value = lang;
+    document.querySelectorAll('.en-text').forEach(el => el.classList.toggle('hidden', lang !== 'en'));
+    document.querySelectorAll('.hi-text').forEach(el => el.classList.toggle('hidden', lang !== 'hi'));
+    const btnEn = document.getElementById('lang-en');
+    const btnHi = document.getElementById('lang-hi');
+    const base  = 'lang-btn px-4 py-2 text-xs font-semibold transition-colors duration-150 ';
+    if (btnEn) btnEn.className = base + (lang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-50');
+    if (btnHi) btnHi.className = base + (lang === 'hi' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-50');
+  }
+  document.getElementById('lang-en')?.addEventListener('click', () => setLanguage('en'));
+  document.getElementById('lang-hi')?.addEventListener('click', () => setLanguage('hi'));
+
+  /* ══════════════════════════════════════════════════════
+     PROGRESS BAR
+     Progress = completedSteps.size / (TOTAL_SECTIONS + 1)
+     The +1 accounts for the review step at the end.
+  ══════════════════════════════════════════════════════ */
+  function buildStepDots() {
+    if (!stepDots) return;
+    stepDots.innerHTML = '';
+    for (let i = 1; i <= TOTAL_SECTIONS; i++) {
+      const dot       = document.createElement('button');
+      dot.type        = 'button';
+      dot.dataset.step = i;
+      const isCurrent   = i === currentStep;
+      const isCompleted = completedSteps.has(i);
+      dot.className = 'step-dot w-7 h-7 rounded-full text-xs font-bold transition-all duration-200 flex-shrink-0 ' +
+        (isCurrent   ? 'bg-blue-600 text-white scale-110 shadow-md' :
+         isCompleted ? 'bg-emerald-500 text-white' :
+                       'bg-slate-200 text-slate-500');
+      dot.textContent = (isCompleted && !isCurrent) ? '✓' : i;
+      // Allow navigating back to any completed or already-visited step
+      if (isCompleted || i <= currentStep) {
+        dot.addEventListener('click', () => goToStep(i));
+      }
+      stepDots.appendChild(dot);
+    }
+    // Review dot
+    const rev = document.createElement('div');
+    const isReview = currentStep > TOTAL_SECTIONS;
+    rev.className = 'step-dot w-7 h-7 rounded-full text-xs font-bold transition-all duration-200 flex-shrink-0 flex items-center justify-center ' +
+      (isReview ? 'bg-emerald-500 text-white scale-110 shadow-md' : 'bg-slate-200 text-slate-500');
+    rev.innerHTML = '<i class="fas fa-eye" style="font-size:9px;"></i>';
+    stepDots.appendChild(rev);
+  }
+
+  function updateProgress() {
+    if (!progressBar) return;
+    const total = TOTAL_SECTIONS + 1; // sections + review
+    const done  = completedSteps.size;
+    const pct   = Math.round((done / total) * 100);
+
+    progressBar.style.width = pct + '%';
+    if (progressPct)     progressPct.textContent     = pct + '%';
+    if (curStepNum)      curStepNum.textContent       = Math.min(currentStep, total);
+    if (curStepNumHi)    curStepNumHi.textContent     = Math.min(currentStep, total);
+    if (totalStepNum)    totalStepNum.textContent     = total;
+    if (totalStepNumHi)  totalStepNumHi.textContent   = total;
+
+    progressBar.className = 'h-2 rounded-full transition-all duration-500 ease-out ' +
+      (pct >= 100 ? 'bg-emerald-500' : 'bg-blue-600');
+
+    buildStepDots();
+  }
+
+  /* ══════════════════════════════════════════════════════
+     DRAFT BANNER — always shows live state, not stale server data
+  ══════════════════════════════════════════════════════ */
+  function updateDraftBanner() {
+    const banner = document.getElementById('draft-banner');
+    if (!banner) return;
+
+    const hasAnything = selectedLocId !== '' || completedSteps.size > 0 || HAS_DRAFT;
+    if (!hasAnything) { banner.classList.add('hidden'); return; }
+
+    // Location label
+    const loc = LOCATIONS.find(l => String(l.id) === String(selectedLocId || DRAFT_LOCATION));
+    const nameEl = document.getElementById('draft-banner-loc');
+    const stepEl = document.getElementById('draft-banner-step');
+    if (nameEl) nameEl.textContent = loc ? (loc.name + ', ' + loc.state) : '—';
+
+    // Step label — always shows the furthest completed step
+    const furthest = completedSteps.size > 0 ? Math.max(...completedSteps) : DRAFT_STEP;
+    if (stepEl) {
+      stepEl.textContent = furthest > 0
+        ? 'Step ' + furthest + ' of ' + (TOTAL_SECTIONS + 1) + ' completed'
+        : 'Location selected';
+    }
+    banner.classList.remove('hidden');
+  }
+
+  /* ══════════════════════════════════════════════════════
+     SHOW / HIDE STEPS
+  ══════════════════════════════════════════════════════ */
+  function showStep(n) {
+    // Hide everything
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.add('hidden'));
+    if (progressCont) progressCont.classList.add('hidden');
+    if (form)         form.classList.add('hidden');
+
+    if (n === 0) {
+      document.getElementById('step-0')?.classList.remove('hidden');
+    } else if (n <= TOTAL_SECTIONS) {
+      if (form) form.classList.remove('hidden');
+      if (progressCont) progressCont.classList.remove('hidden');
+      const panel = document.getElementById('step-' + n);
+      if (panel) {
+        panel.classList.remove('hidden');
+        panel.classList.add('entering');
+        setTimeout(() => panel.classList.remove('entering'), 400);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Review step
+      if (form) form.classList.remove('hidden');
+      if (progressCont) progressCont.classList.remove('hidden');
+      const rev = document.getElementById('step-review');
+      if (rev) {
+        rev.classList.remove('hidden');
+        rev.classList.add('entering');
+        setTimeout(() => rev.classList.remove('entering'), 400);
+        buildReview();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    currentStep = n;
+    updateProgress();
+    updateDraftBanner();
+  }
+
+  function goToStep(n) { showStep(n); }
+  window.goToStep = goToStep; // expose for review edit buttons
+
+  /* ══════════════════════════════════════════════════════
+     LOCATION SELECTION
+  ══════════════════════════════════════════════════════ */
+  function selectLocation(id) {
+    if (!id) return;
+    const idStr = String(id);
+    const loc   = LOCATIONS.find(l => String(l.id) === idStr);
+    if (!loc) return;
+
+    selectedLocId = idStr;
+    if (hiddenLoc) hiddenLoc.value = id;
+
+    // Info card
+    const elName = document.getElementById('loc-name');
+    const elState= document.getElementById('loc-state');
+    const elCap  = document.getElementById('loc-capacity');
+    if (elName)  elName.textContent  = loc.name;
+    if (elState) elState.textContent = loc.state + ', ' + (loc.city || '');
+    if (elCap)   elCap.textContent   = loc.capacity + ' volunteers';
+    document.getElementById('location-info-card')?.classList.remove('hidden');
+
+    // Badge
+    const badge    = document.getElementById('loc-confirmed-badge');
+    const badgeTxt = document.getElementById('loc-confirmed-text');
+    if (badgeTxt) badgeTxt.textContent = loc.name + ' — ' + loc.state;
+    if (badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); }
+
+    // Cards highlight
+    document.querySelectorAll('.loc-card').forEach(card => {
+      const sel = card.dataset.locId === idStr;
+      card.classList.toggle('border-blue-500', sel);
+      card.classList.toggle('bg-blue-50',       sel);
+      card.classList.toggle('ring-2',           sel);
+      card.classList.toggle('ring-blue-200',    sel);
+      card.classList.toggle('shadow-sm',        sel);
+      card.classList.toggle('border-slate-200', !sel);
+      const avatar   = card.querySelector('.loc-avatar');
+      const initials = card.querySelector('.loc-initials');
+      if (sel) {
+        avatar?.classList.replace('bg-slate-100', 'bg-blue-600');
+        initials?.classList.replace('text-slate-500', 'text-white');
+      } else {
+        avatar?.classList.replace('bg-blue-600', 'bg-slate-100');
+        initials?.classList.replace('text-white', 'text-slate-500');
+      }
+      const chk = card.querySelector('.loc-check');
+      if (chk) { chk.classList.toggle('hidden', !sel); chk.classList.toggle('flex', sel); }
+    });
+
+    updateDraftBanner();
+  }
+
+  document.querySelectorAll('.loc-card').forEach(card => {
+    card.addEventListener('click', function () { selectLocation(this.dataset.locId); });
+  });
+
+  document.getElementById('proceed-btn')?.addEventListener('click', () => {
+    if (!selectedLocId) {
+      alert(currentLang === 'hi' ? 'कृपया पहले एक स्थान चुनें।' : 'Please select a location first.');
+      return;
+    }
+    doAutosave();
+    showStep(1);
+  });
+
+  /* ══════════════════════════════════════════════════════
+     OTHER OPTION REVEAL
+  ══════════════════════════════════════════════════════ */
+  function bindOtherReveal(container) {
+    // Radio / checkbox "Other" reveal
+    container.querySelectorAll('[data-is-other="true"]').forEach(inp => {
+      const wrap = inp.closest('label')?.nextElementSibling;
+      if (!wrap || !wrap.classList.contains('other-input-wrap')) return;
+      inp.addEventListener('change', () => wrap.classList.toggle('hidden', !inp.checked));
+    });
+    // Select "Other" reveal
+    container.querySelectorAll('select').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const chosen = sel.options[sel.selectedIndex];
+        const wrap   = sel.parentElement?.querySelector('.other-input-wrap');
+        if (wrap) wrap.classList.toggle('hidden', chosen?.dataset.isOther !== 'true');
+      });
+    });
+  }
+  document.querySelectorAll('.option-group').forEach(bindOtherReveal);
+
+  /* ══════════════════════════════════════════════════════
+     WORD COUNTER
+  ══════════════════════════════════════════════════════ */
+  document.querySelectorAll('textarea').forEach(ta => {
+    const counter = document.querySelector(`.word-counter[data-for="${ta.id}"]`);
+    if (!counter) return;
+    ta.addEventListener('input', () => {
+      const words = ta.value.trim() ? ta.value.trim().split(/\s+/).length : 0;
+      counter.textContent = words + (currentLang === 'hi' ? ' शब्द' : ' words');
+    });
+  });
+
+  /* ══════════════════════════════════════════════════════
+     VALIDATION — scoped to one step panel
+  ══════════════════════════════════════════════════════ */
+  function validateStep(stepN) {
+    if (stepN <= 0 || stepN > TOTAL_SECTIONS) return true;
+    const panel = document.getElementById('step-' + stepN);
+    if (!panel) return true;
+    let valid = true;
+
+    panel.querySelectorAll('.question-block').forEach(block => {
+      if (block.dataset.required !== 'true') return;
+      const qid  = block.dataset.qid;
+      const type = block.dataset.type;
+      let filled = false;
+
+      if (type === 'SINGLE') {
+        filled = !!document.querySelector(`input[type="radio"][name="q_${qid}"]:checked`);
+      } else if (type === 'MULTI') {
+        filled = !!document.querySelector(`input[type="checkbox"][name="q_${qid}"]:checked`);
+      } else if (type === 'SELECT') {
+        const s = panel.querySelector(`select[name="q_${qid}"]`);
+        filled = !!(s && s.value);
+      } else {
+        const i = panel.querySelector(`[name="q_${qid}"]`);
+        filled = !!(i && i.value.trim());
+      }
+
+      block.classList.toggle('has-error', !filled);
+      if (!filled) valid = false;
+    });
+    return valid;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     NEXT / PREV / REVIEW
+  ══════════════════════════════════════════════════════ */
+  document.querySelectorAll('.next-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (validateStep(currentStep)) {
+        completedSteps.add(currentStep); // ← mark step complete for progress
+        doAutosave();                     // ← immediate save on Next (not debounced)
+        showStep(currentStep + 1);
+      } else {
+        document.querySelector('#step-' + currentStep + ' .has-error')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  });
+
+  document.querySelectorAll('.prev-btn').forEach(btn => {
+    btn.addEventListener('click', () => showStep(Math.max(0, currentStep - 1)));
+  });
+
+  document.getElementById('review-btn')?.addEventListener('click', () => {
+    if (validateStep(currentStep)) {
+      completedSteps.add(currentStep); // ← mark last section complete
+      doAutosave();
+      showStep(TOTAL_SECTIONS + 1);
+    } else {
+      document.querySelector('#step-' + currentStep + ' .has-error')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
+  document.getElementById('back-from-review')?.addEventListener('click', () => showStep(TOTAL_SECTIONS));
+
+  /* ══════════════════════════════════════════════════════
+     DECLARATION CHECKBOX
+  ══════════════════════════════════════════════════════ */
+  if (declarationChk && finalSubmitBtn) {
+    finalSubmitBtn.disabled = true;
+    declarationChk.addEventListener('change', () => {
+      finalSubmitBtn.disabled = !declarationChk.checked;
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     FORM SUBMIT GUARD
+  ══════════════════════════════════════════════════════ */
+  form?.addEventListener('submit', function (e) {
+    if (!hiddenLoc?.value) {
+      e.preventDefault();
+      alert(currentLang === 'hi' ? 'कृपया पहले एक शिविर स्थान चुनें।' : 'Please select a camp location.');
+      showStep(0);
+      return;
+    }
+    if (finalSubmitBtn) {
+      finalSubmitBtn.disabled = true;
+      finalSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' +
+        (currentLang === 'hi' ? 'जमा हो रहा है…' : 'Submitting…');
+    }
+  });
+
+  /* ══════════════════════════════════════════════════════
+     COLLECT ALL ANSWERS — complete, type-safe
+     Searches the WHOLE document so radio inputs (which
+     share name scope across the DOM) are always found.
+  ══════════════════════════════════════════════════════ */
+  function collectAnswers() {
+    const answers = {};
+    document.querySelectorAll('.question-block').forEach(block => {
+      const qid  = block.dataset.qid;
+      const type = block.dataset.type;
+      if (!qid) return;
+
+      if (type === 'SINGLE') {
+        // Must search whole document — radios use name= not contained by block
+        const checked = document.querySelector(`input[type="radio"][name="q_${qid}"]:checked`);
+        answers[qid] = {
+          value: checked ? checked.value : '',
+          other: document.querySelector(`input[name="q_${qid}_other"]`)?.value?.trim() || ''
+        };
+      } else if (type === 'MULTI') {
+        const checked = [...document.querySelectorAll(`input[type="checkbox"][name="q_${qid}"]:checked`)];
+        answers[qid] = {
+          value: checked.map(c => c.value),
+          other: document.querySelector(`input[name="q_${qid}_other"]`)?.value?.trim() || ''
+        };
+      } else if (type === 'SELECT') {
+        const sel = document.querySelector(`select[name="q_${qid}"]`);
+        answers[qid] = {
+          value: sel ? sel.value : '',
+          other: document.querySelector(`input[name="q_${qid}_other"]`)?.value?.trim() || ''
+        };
+      } else {
+        // TEXT, TEXTAREA, EMAIL, PHONE, NUMBER, DATE
+        const inp = document.querySelector(
+          `textarea[name="q_${qid}"], ` +
+          `input[type="text"][name="q_${qid}"], ` +
+          `input[type="email"][name="q_${qid}"], ` +
+          `input[type="tel"][name="q_${qid}"], ` +
+          `input[type="number"][name="q_${qid}"], ` +
+          `input[type="date"][name="q_${qid}"]`
+        );
+        answers[qid] = { value: inp ? inp.value : '', other: '' };
+      }
+    });
+    return answers;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     AUTOSAVE
+     - doAutosave()     → immediate, called on Next/Review
+     - triggerAutosave()→ debounced 1200ms, called on input/change
+  ══════════════════════════════════════════════════════ */
+  function doAutosave() {
+    clearTimeout(autosaveTimer);
+    if (!AUTOSAVE_URL) return;
+    fetch(AUTOSAVE_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+      body: JSON.stringify({
+        preferred_location: selectedLocId,
+        language:           currentLang,
+        answers:            collectAnswers(),
+        last_step:          currentStep,
+      }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'saved') {
+        const ind = document.getElementById('autosave-indicator-' + currentStep);
+        if (ind) { ind.classList.remove('hidden'); setTimeout(() => ind.classList.add('hidden'), 3000); }
+        updateDraftBanner();
+      }
+    })
+    .catch(() => {});
+  }
+
+  function triggerAutosave() {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(doAutosave, 1200);
+  }
+
+  // Attach debounced autosave to every field
+  form?.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('input',  triggerAutosave);
+    el.addEventListener('change', triggerAutosave);
+  });
+
+  /* ══════════════════════════════════════════════════════
+     RESTORE DRAFT — handles ALL types including radio fix
+  ══════════════════════════════════════════════════════ */
+  function restoreDraft() {
+    // Restore location
+    if (DRAFT_LOCATION) selectLocation(DRAFT_LOCATION);
+
+    // Restore each answer
+    Object.entries(DRAFT_ANSWERS).forEach(([qid, data]) => {
+      if (!data) return;
+      const val   = data.value;
+      const other = data.other || '';
+
+      if (Array.isArray(val)) {
+        // MULTI checkbox
+        val.forEach(v => {
+          const cb = document.querySelector(
+            `input[type="checkbox"][name="q_${qid}"][value="${CSS.escape(String(v))}"]`
+          );
+          if (cb) { cb.checked = true; cb.dispatchEvent(new Event('change', { bubbles: true })); }
+        });
+      } else if (typeof val === 'string' && val !== '') {
+        // Try SINGLE radio first (most specific)
+        const radio = document.querySelector(
+          `input[type="radio"][name="q_${qid}"][value="${CSS.escape(val)}"]`
+        );
+        if (radio) {
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+        } else {
+          // Try SELECT
+          const sel = document.querySelector(`select[name="q_${qid}"]`);
+          if (sel) {
+            sel.value = val;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            // TEXT / TEXTAREA / DATE / etc.
+            const textInp = document.querySelector(
+              `textarea[name="q_${qid}"], ` +
+              `input[type="text"][name="q_${qid}"], ` +
+              `input[type="email"][name="q_${qid}"], ` +
+              `input[type="tel"][name="q_${qid}"], ` +
+              `input[type="number"][name="q_${qid}"], ` +
+              `input[type="date"][name="q_${qid}"]`
+            );
+            if (textInp) textInp.value = val;
+          }
+        }
+      }
+
+      // Restore "other" text and reveal its input
+      if (other) {
+        const otherInp = document.querySelector(`input[name="q_${qid}_other"]`);
+        if (otherInp) {
+          otherInp.value = other;
+          const wrap = otherInp.closest('.other-input-wrap');
+          if (wrap) wrap.classList.remove('hidden');
+        }
+      }
+    });
+
+    // Restore progress bar: mark all steps before DRAFT_STEP as completed
+    for (let i = 1; i < DRAFT_STEP; i++) completedSteps.add(i);
+    updateProgress();
+    updateDraftBanner();
+  }
+
+  /* ══════════════════════════════════════════════════════
+     REVIEW PANEL BUILD
+  ══════════════════════════════════════════════════════ */
+  function buildReview() {
+    const content = document.getElementById('review-content');
+    if (!content) return;
+    content.innerHTML = '';
+
+    // Location row
+    const loc = LOCATIONS.find(l => String(l.id) === String(selectedLocId));
+    if (loc) {
+      const row = document.createElement('div');
+      row.className = 'border border-slate-200 rounded-xl overflow-hidden';
+      row.innerHTML = `
+        <div class="bg-slate-50 px-4 py-3 border-b border-slate-100">
+          <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">🏕 Preferred Location</span>
+        </div>
+        <div class="px-4 py-3 text-sm text-slate-800 font-medium">${loc.name}, ${loc.state}${loc.city ? ' — ' + loc.city : ''}</div>`;
+      content.appendChild(row);
+    }
+
+    // Each section
+    document.querySelectorAll('.step-panel').forEach(panel => {
+      if (!panel.id.startsWith('step-') || panel.id === 'step-0' || panel.id === 'step-review') return;
+      const stepN    = parseInt(panel.id.replace('step-', ''));
+      const h2en     = panel.querySelector('h2.en-text');
+      const sTitle   = h2en ? h2en.textContent.trim() : ('Section ' + stepN);
+      const questions= panel.querySelectorAll('.question-block');
+      if (!questions.length) return;
+
+      const section  = document.createElement('div');
+      section.className = 'border border-slate-200 rounded-xl overflow-hidden';
+      section.innerHTML = `
+        <div class="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">${sTitle}</span>
+          <button type="button" onclick="goToStep(${stepN})"
+                  class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors">
+            Edit <i class="fas fa-edit ml-1"></i>
+          </button>
+        </div>`;
+
+      const body = document.createElement('div');
+      body.className = 'divide-y divide-slate-100';
+
+      questions.forEach(block => {
+        const qid    = block.dataset.qid;
+        const type   = block.dataset.type;
+        const qLabelEl = block.querySelector('label > span.en-text');
+        const qLabel = qLabelEl ? qLabelEl.textContent.trim() : '';
+        let answer   = '';
+
+        if (type === 'SINGLE') {
+          const checked = document.querySelector(`input[type="radio"][name="q_${qid}"]:checked`);
+          if (checked) {
+            const labelEn = checked.closest('label')?.querySelector('.en-text');
+            answer = labelEn ? labelEn.textContent.trim() : checked.value;
+            const otherVal = document.querySelector(`input[name="q_${qid}_other"]`)?.value?.trim();
+            if (otherVal) answer += ': ' + otherVal;
+          }
+        } else if (type === 'MULTI') {
+          const vals = [];
+          document.querySelectorAll(`input[type="checkbox"][name="q_${qid}"]:checked`).forEach(c => {
+            const labelEn = c.closest('label')?.querySelector('.en-text');
+            vals.push(labelEn ? labelEn.textContent.trim() : c.value);
+          });
+          const otherVal = document.querySelector(`input[name="q_${qid}_other"]`)?.value?.trim();
+          if (otherVal) vals.push('Other: ' + otherVal);
+          answer = vals.join(', ');
+        } else if (type === 'SELECT') {
+          const sel = document.querySelector(`select[name="q_${qid}"]`);
+          if (sel && sel.value) {
+            answer = sel.options[sel.selectedIndex]?.textContent?.trim() || '';
+            const otherVal = document.querySelector(`input[name="q_${qid}_other"]`)?.value?.trim();
+            if (otherVal) answer += ': ' + otherVal;
+          }
+        } else {
+          const inp = document.querySelector(
+            `textarea[name="q_${qid}"], input[type="text"][name="q_${qid}"],` +
+            `input[type="email"][name="q_${qid}"], input[type="tel"][name="q_${qid}"],` +
+            `input[type="number"][name="q_${qid}"], input[type="date"][name="q_${qid}"]`
+          );
+          answer = (inp?.value?.trim() || '').replace(/\n/g, '<br>');
+        }
+
+        const row = document.createElement('div');
+        row.className = 'px-4 py-3';
+        row.innerHTML = `
+          <p class="text-xs font-semibold text-slate-500 mb-1">${qLabel || '&nbsp;'}</p>
+          <p class="text-sm text-slate-800">${answer || '<span class="text-slate-400">—</span>'}</p>`;
+        body.appendChild(row);
+      });
+
+      section.appendChild(body);
+      content.appendChild(section);
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     RESUME BUTTON
+  ══════════════════════════════════════════════════════ */
+  document.getElementById('resume-btn')?.addEventListener('click', () => {
+    restoreDraft();
+    showStep(DRAFT_STEP || 1);
+  });
+
+  /* ══════════════════════════════════════════════════════
+     INIT
+  ══════════════════════════════════════════════════════ */
+  setLanguage(currentLang);
+
+  // Set total step count display
+  const tot = TOTAL_SECTIONS + 1;
+  if (totalStepNum)    totalStepNum.textContent    = tot;
+  if (totalStepNumHi)  totalStepNumHi.textContent  = tot;
+
+  // Start at step 0
+  showStep(0);
+
+  // If there's a draft, show live banner data immediately
+  if (HAS_DRAFT) {
+    if (DRAFT_LOCATION) {
+      const loc = LOCATIONS.find(l => String(l.id) === String(DRAFT_LOCATION));
+      const nameEl = document.getElementById('draft-banner-loc');
+      if (nameEl && loc) nameEl.textContent = loc.name + ', ' + loc.state;
+    }
+    const stepEl = document.getElementById('draft-banner-step');
+    if (stepEl && DRAFT_STEP > 0) {
+      stepEl.textContent = 'Step ' + DRAFT_STEP + ' of ' + tot + ' completed';
+    }
+  }
+
+})();
+</script>
+
 {% endblock %}

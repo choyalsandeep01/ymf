@@ -18,6 +18,6 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Customize admin site
-admin.site.site_header = "CAMP Management System"
-admin.site.site_title = "CAMP Admin"
-admin.site.index_title = "Welcome to CAMP Management System"
+admin.site.site_header = "YMF Management System"
+admin.site.site_title = "YMF Admin"
+admin.site.index_title = "Welcome to YMF Management System"

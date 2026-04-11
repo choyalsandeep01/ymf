@@ -1,130 +1,390 @@
 {% extends 'base.html' %}
-
-{% block title %}Sign Up - CAMP Platform{% endblock %}
+{% block title %}Sign Up — YMF4You{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                <i class="fas fa-campground text-blue-600 mr-2"></i>
-                Create your account
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Already have an account?
-                <a href="{% url 'accounts:login' %}" class="font-medium text-blue-600 hover:text-blue-500">
-                    Sign in
-                </a>
-            </p>
+<style>
+  .slide { position: absolute; inset: 0; background-size: cover; background-position: center;
+           opacity: 0; transition: opacity 1.8s ease-in-out; }
+  .slide.active { opacity: 1; }
+  .bg-overlay { position: absolute; inset: 0; background: rgba(10,14,20,0.62); }
+
+  .auth-input {
+    display: block; width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #111827;
+    background: #fff;
+    transition: border-color 180ms, box-shadow 180ms;
+  }
+  .auth-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+  .auth-input.error { border-color: #f87171; }
+
+  /* Password strength bar */
+  .strength-bar { height: 3px; border-radius: 2px; transition: width 0.4s, background 0.4s; }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.35);
+         transition: background 0.3s, transform 0.3s; cursor: pointer; }
+  .dot.active { background: #fff; transform: scale(1.4); }
+
+  /* Step pills */
+  .step-pill { display: flex; align-items: center; gap: 0.5rem;
+               font-size: 0.75rem; font-weight: 600; color: #94a3b8; }
+  .step-pill .num { width: 22px; height: 22px; border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 11px; font-weight: 700;
+                    background: #e2e8f0; color: #94a3b8;
+                    transition: background 0.3s, color 0.3s; }
+  .step-pill.done .num  { background: #10b981; color: #fff; }
+  .step-pill.active .num{ background: #2563eb; color: #fff; }
+  .step-pill.active     { color: #1e293b; }
+</style>
+
+<div class="min-h-screen flex">
+
+  <!-- ══ LEFT — Image Slideshow ══ -->
+  <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between">
+
+    <div class="slide active" style="background-image:url('/static/images/1.jpeg');"></div>
+    <div class="slide"        style="background-image:url('/static/images/2.jpeg');"></div>
+    <div class="slide"        style="background-image:url('/static/images/3.jpeg');"></div>
+    <div class="slide"        style="background-image:url('/static/images/4.jpeg');"></div>
+    <div class="slide"        style="background-image:url('/static/images/5.jpeg');"></div>
+    <div class="slide"        style="background-image:url('/static/images/6.jpeg');"></div>
+    <div class="slide"        style="background-image:url('/static/images/7.jpeg');"></div>
+    <div class="slide"        style="background-image:url('/static/images/8.jpeg');"></div>
+    <div class="slide"        style="background-image:url('/static/images/9.jpeg');"></div>
+
+    <div class="bg-overlay"></div>
+
+    <div class="relative z-10 flex flex-col justify-between h-full px-10 py-10">
+
+      <!-- Logo -->
+      <div class="flex items-center space-x-2">
+        <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-campground text-white text-base"></i>
         </div>
-        
-        <form class="mt-8 space-y-6" method="POST">
-            {% csrf_token %}
-            
-            <div class="rounded-md shadow-sm space-y-4">
-                <!-- First Name -->
-                <div>
-                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        First Name *
-                    </label>
-                    {{ form.first_name }}
-                    {% if form.first_name.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.first_name.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                
-                <!-- Last Name -->
-                <div>
-                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        Last Name *
-                    </label>
-                    {{ form.last_name }}
-                    {% if form.last_name.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.last_name.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                
-                <!-- Username -->
-                <div>
-                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        Username *
-                    </label>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.username.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                
-                <!-- Email -->
-                <div>
-                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        Email Address *
-                    </label>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                
-                <!-- Password -->
-                <div>
-                    <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        Password *
-                    </label>
-                    <div class="relative">
-                        {{ form.password1 }}
-                        <button type="button" onclick="togglePassword('password1')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                            <i id="eye-icon-1" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
-                        </button>
-                    </div>
-                    {% if form.password1.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.password1.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                
-                <!-- Confirm Password -->
-                <div>
-                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        Confirm Password *
-                    </label>
-                    <div class="relative">
-                        {{ form.password2 }}
-                        <button type="button" onclick="togglePassword('password2')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                            <i id="eye-icon-2" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
-                        </button>
-                    </div>
-                    {% if form.password2.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.password2.errors.0 }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <div>
-                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <i class="fas fa-user-plus"></i>
-                    </span>
-                    Sign up
-                </button>
-            </div>
-        </form>
+        <span class="text-white font-bold text-lg tracking-tight">YMF4You</span>
+      </div>
+
+      <!-- Stats / highlights -->
+      <div class="max-w-sm space-y-5">
+        <h2 class="text-white text-2xl font-semibold leading-snug">
+          Join hundreds of volunteers making a difference.
+        </h2>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-white/10 rounded-xl px-3 py-4 text-center">
+            <p class="text-white text-xl font-bold">500+</p>
+            <p class="text-white/60 text-xs mt-0.5">Volunteers</p>
+          </div>
+          <div class="bg-white/10 rounded-xl px-3 py-4 text-center">
+            <p class="text-white text-xl font-bold">12</p>
+            <p class="text-white/60 text-xs mt-0.5">States</p>
+          </div>
+          <div class="bg-white/10 rounded-xl px-3 py-4 text-center">
+            <p class="text-white text-xl font-bold">3</p>
+            <p class="text-white/60 text-xs mt-0.5">Camps/Year</p>
+          </div>
+        </div>
+
+        <!-- Dot indicators -->
+        <div class="flex items-center space-x-2" id="dot-row"></div>
+      </div>
+
     </div>
+  </div>
+
+  <!-- ══ RIGHT — Sign Up Form ══ -->
+  <div class="w-full lg:w-1/2 flex items-start justify-center bg-slate-50
+              px-6 py-10 overflow-y-auto">
+    <div class="w-full max-w-md">
+
+      <!-- Mobile logo -->
+      <div class="flex items-center space-x-2 mb-6 lg:hidden">
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <i class="fas fa-campground text-white text-sm"></i>
+        </div>
+        <span class="text-slate-800 font-bold text-base">YMF4You</span>
+      </div>
+
+      <!-- Heading -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-900">Create your account</h1>
+        <p class="text-slate-500 text-sm mt-1">Start your volunteer journey today</p>
+      </div>
+
+      <!-- Non-field errors -->
+      {% if form.non_field_errors %}
+      <div class="mb-5 flex items-start space-x-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+        <i class="fas fa-exclamation-circle text-red-400 mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm text-red-700">{{ form.non_field_errors.0 }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Form -->
+      <form method="POST" id="signup-form" class="space-y-4" novalidate>
+        {% csrf_token %}
+
+        <!-- Name row -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="{{ form.first_name.id_for_label }}"
+                   class="block text-sm font-medium text-slate-700 mb-1.5">
+              First Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   id="{{ form.first_name.id_for_label }}"
+                   name="first_name"
+                   value="{{ form.first_name.value|default:'' }}"
+                   autocomplete="given-name"
+                   placeholder="Rahul"
+                   class="auth-input {% if form.first_name.errors %}error{% endif %}">
+            {% if form.first_name.errors %}
+            <p class="mt-1 text-xs text-red-500">{{ form.first_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label for="{{ form.last_name.id_for_label }}"
+                   class="block text-sm font-medium text-slate-700 mb-1.5">
+              Last Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   id="{{ form.last_name.id_for_label }}"
+                   name="last_name"
+                   value="{{ form.last_name.value|default:'' }}"
+                   autocomplete="family-name"
+                   placeholder="Sharma"
+                   class="auth-input {% if form.last_name.errors %}error{% endif %}">
+            {% if form.last_name.errors %}
+            <p class="mt-1 text-xs text-red-500">{{ form.last_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div>
+          <label for="{{ form.username.id_for_label }}"
+                 class="block text-sm font-medium text-slate-700 mb-1.5">
+            Username <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm
+                         pointer-events-none select-none">@</span>
+            <input type="text"
+                   id="{{ form.username.id_for_label }}"
+                   name="username"
+                   value="{{ form.username.value|default:'' }}"
+                   autocomplete="username"
+                   placeholder="rahulsharma"
+                   class="auth-input pl-7 {% if form.username.errors %}error{% endif %}">
+          </div>
+          {% if form.username.errors %}
+          <p class="mt-1 text-xs text-red-500 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i>{{ form.username.errors.0 }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="{{ form.email.id_for_label }}"
+                 class="block text-sm font-medium text-slate-700 mb-1.5">
+            Email Address <span class="text-red-500">*</span>
+          </label>
+          <input type="email"
+                 id="{{ form.email.id_for_label }}"
+                 name="email"
+                 value="{{ form.email.value|default:'' }}"
+                 autocomplete="email"
+                 placeholder="rahul@example.com"
+                 class="auth-input {% if form.email.errors %}error{% endif %}">
+          {% if form.email.errors %}
+          <p class="mt-1 text-xs text-red-500 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i>{{ form.email.errors.0 }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="{{ form.password1.id_for_label }}"
+                 class="block text-sm font-medium text-slate-700 mb-1.5">
+            Password <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input type="password"
+                   id="{{ form.password1.id_for_label }}"
+                   name="password1"
+                   autocomplete="new-password"
+                   placeholder="Create a strong password"
+                   oninput="checkStrength(this.value)"
+                   class="auth-input pr-10 {% if form.password1.errors %}error{% endif %}">
+            <button type="button" onclick="togglePwd('{{ form.password1.id_for_label }}','eye1')"
+                    class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+              <i id="eye1" class="fas fa-eye text-sm"></i>
+            </button>
+          </div>
+          <!-- Strength bar -->
+          <div class="mt-1.5 flex space-x-1">
+            <div class="flex-1 h-1 rounded bg-slate-200 overflow-hidden">
+              <div id="sb1" class="strength-bar w-0 bg-red-400"></div>
+            </div>
+            <div class="flex-1 h-1 rounded bg-slate-200 overflow-hidden">
+              <div id="sb2" class="strength-bar w-0 bg-amber-400"></div>
+            </div>
+            <div class="flex-1 h-1 rounded bg-slate-200 overflow-hidden">
+              <div id="sb3" class="strength-bar w-0 bg-emerald-500"></div>
+            </div>
+          </div>
+          <p id="strength-label" class="text-xs text-slate-400 mt-1"></p>
+          {% if form.password1.errors %}
+          <p class="mt-1 text-xs text-red-500 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i>{{ form.password1.errors.0 }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label for="{{ form.password2.id_for_label }}"
+                 class="block text-sm font-medium text-slate-700 mb-1.5">
+            Confirm Password <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input type="password"
+                   id="{{ form.password2.id_for_label }}"
+                   name="password2"
+                   autocomplete="new-password"
+                   placeholder="Repeat your password"
+                   oninput="checkMatch(this.value)"
+                   class="auth-input pr-10 {% if form.password2.errors %}error{% endif %}">
+            <button type="button" onclick="togglePwd('{{ form.password2.id_for_label }}','eye2')"
+                    class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+              <i id="eye2" class="fas fa-eye text-sm"></i>
+            </button>
+          </div>
+          <p id="match-label" class="text-xs mt-1"></p>
+          {% if form.password2.errors %}
+          <p class="mt-1 text-xs text-red-500 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i>{{ form.password2.errors.0 }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Submit -->
+        <button type="submit"
+                class="w-full flex items-center justify-center space-x-2 mt-2
+                       bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+                       text-white text-sm font-semibold
+                       py-2.5 px-4 rounded-lg
+                       transition-colors duration-150
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          <i class="fas fa-user-plus text-sm"></i>
+          <span>Create Account</span>
+        </button>
+
+      </form>
+
+      <!-- Footer link -->
+      <p class="mt-5 text-center text-sm text-slate-500">
+        Already have an account?
+        <a href="{% url 'accounts:login' %}"
+           class="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+          Sign in →
+        </a>
+      </p>
+
+      <!-- Terms note -->
+      <p class="mt-4 text-center text-xs text-slate-400 leading-relaxed">
+        By creating an account you agree to our
+        <span class="text-slate-500 font-medium">Terms of Service</span>
+        and
+        <span class="text-slate-500 font-medium">Privacy Policy</span>.
+      </p>
+
+    </div>
+  </div>
+
 </div>
 
 <script>
-function togglePassword(fieldId) {
-    const passwordField = document.getElementById(fieldId);
-    const eyeIcon = document.getElementById('eye-icon-' + fieldId.slice(-1));
-    
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
-    } else {
-        passwordField.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
-    }
+/* ── Slideshow ── */
+(function () {
+  const slides = document.querySelectorAll('.slide');
+  const dotRow = document.getElementById('dot-row');
+  let   cur    = 0;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotRow.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    document.querySelectorAll('.dot')[cur].classList.remove('active');
+    cur = n;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot')[cur].classList.add('active');
+  }
+
+  setInterval(() => goTo((cur + 1) % slides.length), 5000);
+})();
+
+/* ── Password toggle ── */
+function togglePwd(fieldId, iconId) {
+  const f = document.getElementById(fieldId);
+  const i = document.getElementById(iconId);
+  if (f.type === 'password') {
+    f.type = 'text';
+    i.classList.replace('fa-eye', 'fa-eye-slash');
+  } else {
+    f.type = 'password';
+    i.classList.replace('fa-eye-slash', 'fa-eye');
+  }
+}
+
+/* ── Password strength ── */
+function checkStrength(val) {
+  const bars   = ['sb1','sb2','sb3'];
+  const labels = ['Weak','Fair','Strong'];
+  const colours= ['#f87171','#fbbf24','#10b981'];
+
+  let score = 0;
+  if (val.length >= 8)                          score++;
+  if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+  if (/[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val)) score++;
+
+  bars.forEach((id, idx) => {
+    const el = document.getElementById(id);
+    el.style.width   = idx < score ? '100%' : '0%';
+    el.style.background = colours[score - 1] || '#f87171';
+  });
+
+  const lbl = document.getElementById('strength-label');
+  lbl.textContent  = val.length ? labels[score - 1] || 'Too short' : '';
+  lbl.style.color  = score > 0 ? colours[score - 1] : '#94a3b8';
+}
+
+/* ── Password match ── */
+function checkMatch(confirmVal) {
+  const p1  = document.getElementById('{{ form.password1.id_for_label }}').value;
+  const lbl = document.getElementById('match-label');
+  if (!confirmVal) { lbl.textContent = ''; return; }
+  if (p1 === confirmVal) {
+    lbl.textContent  = '✓ Passwords match';
+    lbl.style.color  = '#10b981';
+  } else {
+    lbl.textContent  = '✗ Passwords do not match';
+    lbl.style.color  = '#ef4444';
+  }
 }
 </script>
 {% endblock %}

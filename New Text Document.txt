@@ -1,0 +1,98 @@
+ ssh -i "ymf_key.pem" ubuntu@13.60.223.224
+
+
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/project/ymf
+ExecStart=/home/ubuntu/project/env/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          campproject.wsgi:application
+
+
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/project/ymf
+ExecStart=/home/ubuntu/project/env/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          campproject.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+server {
+    listen 80;
+    server_name 13.60.223.224;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+}
+
+
+server {
+    listen 80;
+    server_name 13.60.223.224;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+
+    # 🔥 STATIC FILES
+    location /static/ {
+        root /home/ubuntu/project/ymf;
+    }
+
+    # 🔥 MEDIA FILES (optional)
+    location /media/ {
+        root /home/ubuntu/project/ymf;
+    }
+
+    # 🔥 DJANGO APP
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+}
+
+
+
+
+server {
+    listen 80;
+    server_name ymf4you.org www.ymf4you.org;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+
+    location /static/ {
+        alias /home/ubuntu/project/ymf/staticfiles/;
+    }
+
+    location /media/ {
+        alias /home/ubuntu/project/ymf/media/;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+}

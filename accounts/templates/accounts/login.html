@@ -1,90 +1,289 @@
 {% extends 'base.html' %}
-
-{% block title %}Login - CAMP Platform{% endblock %}
+{% block title %}Sign In — YMF4You{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                <i class="fas fa-campground text-blue-600 mr-2"></i>
-                Sign in to your account
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Don't have an account?
-                <a href="{% url 'accounts:signup' %}" class="font-medium text-blue-600 hover:text-blue-500">
-                    Sign up
-                </a>
-            </p>
+<style>
+  /* ── Slideshow ── */
+  .slide { position: absolute; inset: 0; background-size: cover; background-position: center;
+           opacity: 0; transition: opacity 1.8s ease-in-out; }
+  .slide.active { opacity: 1; }
+
+  /* ── Overlay ── */
+  .bg-overlay { position: absolute; inset: 0; background: rgba(10,14,20,0.62); }
+
+  /* ── Form card ── */
+  .auth-card { background: rgba(255,255,255,0.97); backdrop-filter: blur(12px);
+               border: 1px solid rgba(255,255,255,0.18); }
+
+  /* ── Input focus ring ── */
+  .auth-input {
+    display: block; width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #111827;
+    background: #fff;
+    transition: border-color 180ms, box-shadow 180ms;
+  }
+  .auth-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+
+  /* ── Quote fade ── */
+  .quote-item { opacity: 0; transition: opacity 1.2s ease; position: absolute; }
+  .quote-item.active { opacity: 1; position: relative; }
+
+  /* ── Dot indicators ── */
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.35);
+         transition: background 0.3s, transform 0.3s; }
+  .dot.active { background: #fff; transform: scale(1.4); }
+</style>
+
+<div class="min-h-screen flex">
+
+  <!-- ══ LEFT — Image Slideshow ══ -->
+  <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between">
+
+    <!-- Slides — swap these URLs for your own 8-9 images -->
+    <div class="slide active"  style="background-image:url('/static/images/1.jpeg');"></div>
+    <div class="slide"         style="background-image:url('/static/images/2.jpeg');"></div>
+    <div class="slide"         style="background-image:url('/static/images/3.jpeg');"></div>
+    <div class="slide"         style="background-image:url('/static/images/4.jpeg');"></div>
+    <div class="slide"         style="background-image:url('/static/images/5.jpeg');"></div>
+    <div class="slide"         style="background-image:url('/static/images/6.jpeg');"></div>
+    <div class="slide"         style="background-image:url('/static/images/7.jpeg');"></div>
+    <div class="slide"         style="background-image:url('/static/images/8.jpeg');"></div>
+    <div class="slide"         style="background-image:url('/static/images/9.jpeg');"></div>
+
+    <!-- Overlay -->
+    <div class="bg-overlay"></div>
+
+    <!-- Content over image -->
+    <div class="relative z-10 flex flex-col justify-between h-full px-10 py-10">
+
+      <!-- Logo -->
+      <div class="flex items-center space-x-2">
+        <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-campground text-white text-base"></i>
         </div>
-        
-        <form class="mt-8 space-y-6" method="POST">
-            {% csrf_token %}
-            
-            <div class="rounded-md shadow-sm space-y-4">
-                <!-- Username or Email -->
-                <div>
-                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        Username or Email
-                    </label>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.username.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                
-                <!-- Password -->
-                <div>
-                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        Password
-                    </label>
-                    <div class="relative">
-                        {{ form.password }}
-                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                            <i id="eye-icon" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
-                        </button>
-                    </div>
-                    {% if form.password.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.password.errors.0 }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    {{ form.remember_me }}
-                    <label for="{{ form.remember_me.id_for_label }}" class="ml-2 block text-sm text-gray-900">
-                        Remember me
-                    </label>
-                </div>
-            </div>
-            
-            <div>
-                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </span>
-                    Sign in
-                </button>
-            </div>
-        </form>
+        <span class="text-white font-bold text-lg tracking-tight">YMF4You</span>
+      </div>
+
+      <!-- Rotating quotes -->
+      <div class="max-w-sm">
+        <div class="relative min-h-[6rem]" id="quote-container">
+          <div class="quote-item active">
+            <p class="text-white text-xl font-light leading-relaxed">
+              "Every volunteer shapes a child's future."
+            </p>
+            <p class="text-white/50 text-sm mt-3 font-medium">— Camp Programme, 2024</p>
+          </div>
+          <div class="quote-item">
+            <p class="text-white text-xl font-light leading-relaxed">
+              "Leadership is forged in the field, not the classroom."
+            </p>
+            <p class="text-white/50 text-sm mt-3 font-medium">— Camp Mentor</p>
+          </div>
+          <div class="quote-item">
+            <p class="text-white text-xl font-light leading-relaxed">
+              "Service transforms both the giver and the receiver."
+            </p>
+            <p class="text-white/50 text-sm mt-3 font-medium">— Volunteer Handbook</p>
+          </div>
+        </div>
+
+        <!-- Slide indicators -->
+        <div class="flex items-center space-x-2 mt-6" id="dot-row">
+          <!-- dots injected by JS -->
+        </div>
+      </div>
+
     </div>
+  </div>
+
+  <!-- ══ RIGHT — Sign In Form ══ -->
+  <div class="w-full lg:w-1/2 flex items-center justify-center bg-slate-50 px-6 py-12">
+    <div class="w-full max-w-md">
+
+      <!-- Mobile logo -->
+      <div class="flex items-center space-x-2 mb-8 lg:hidden">
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <i class="fas fa-campground text-white text-sm"></i>
+        </div>
+        <span class="text-slate-800 font-bold text-base">YMF4You</span>
+      </div>
+
+      <!-- Heading -->
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-slate-900">Welcome back</h1>
+        <p class="text-slate-500 text-sm mt-1">Sign in to your volunteer account</p>
+      </div>
+
+      <!-- Non-field errors -->
+      {% if form.non_field_errors %}
+      <div class="mb-5 flex items-start space-x-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+        <i class="fas fa-exclamation-circle text-red-400 mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm text-red-700">{{ form.non_field_errors.0 }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Messages -->
+      {% for message in messages %}
+      <div class="mb-5 flex items-start space-x-2
+                  {% if message.tags == 'success' %}bg-emerald-50 border-emerald-200{% else %}bg-blue-50 border-blue-200{% endif %}
+                  border rounded-lg px-4 py-3">
+        <i class="fas fa-info-circle {% if message.tags == 'success' %}text-emerald-400{% else %}text-blue-400{% endif %} mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm {% if message.tags == 'success' %}text-emerald-700{% else %}text-blue-700{% endif %}">{{ message }}</p>
+      </div>
+      {% endfor %}
+
+      <!-- Form -->
+      <form method="POST" class="space-y-5" novalidate>
+        {% csrf_token %}
+
+        <!-- Username -->
+        <div>
+          <label for="{{ form.username.id_for_label }}"
+                 class="block text-sm font-medium text-slate-700 mb-1.5">
+            Username or Email
+          </label>
+          <input
+            type="text"
+            id="{{ form.username.id_for_label }}"
+            name="username"
+            value="{{ form.username.value|default:'' }}"
+            autocomplete="username"
+            placeholder="Enter your username or email"
+            class="auth-input {% if form.username.errors %}border-red-400{% endif %}">
+          {% if form.username.errors %}
+          <p class="mt-1 text-xs text-red-500 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i>{{ form.username.errors.0 }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="id_password"
+                 class="block text-sm font-medium text-slate-700 mb-1.5">
+            Password
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="id_password"
+              name="password"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+              class="auth-input pr-10 {% if form.password.errors %}border-red-400{% endif %}">
+            <button type="button" onclick="togglePwd('id_password','eye1')"
+                    class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+              <i id="eye1" class="fas fa-eye text-sm"></i>
+            </button>
+          </div>
+          {% if form.password.errors %}
+          <p class="mt-1 text-xs text-red-500 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i>{{ form.password.errors.0 }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Remember me -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="checkbox"
+                   id="{{ form.remember_me.id_for_label }}"
+                   name="remember_me"
+                   {% if form.remember_me.value %}checked{% endif %}
+                   class="w-4 h-4 rounded border-slate-300 text-blue-600
+                          focus:ring-blue-500 focus:ring-offset-0">
+            <span class="text-sm text-slate-600">Remember me</span>
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit"
+                class="w-full flex items-center justify-center space-x-2
+                       bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+                       text-white text-sm font-semibold
+                       py-2.5 px-4 rounded-lg
+                       transition-colors duration-150
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          <i class="fas fa-sign-in-alt text-sm"></i>
+          <span>Sign in</span>
+        </button>
+      </form>
+
+      <!-- Footer link -->
+      <p class="mt-6 text-center text-sm text-slate-500">
+        Don't have an account?
+        <a href="{% url 'accounts:signup' %}"
+           class="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+          Create one →
+        </a>
+      </p>
+
+    </div>
+  </div>
+
 </div>
 
 <script>
-function togglePassword() {
-    const passwordField = document.getElementById('password');
-    const eyeIcon = document.getElementById('eye-icon');
-    
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
-    } else {
-        passwordField.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
+/* ── Slideshow ── */
+(function () {
+  const slides  = document.querySelectorAll('.slide');
+  const quotes  = document.querySelectorAll('.quote-item');
+  const dotRow  = document.getElementById('dot-row');
+  let   current = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    dotRow.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    document.querySelectorAll('.dot')[current].classList.remove('active');
+
+    // cycle quotes independently (fewer quotes than slides is fine)
+    if (quotes[current % quotes.length]) {
+      quotes[current % quotes.length].classList.remove('active');
     }
+
+    current = n;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.dot')[current].classList.add('active');
+    if (quotes[current % quotes.length]) {
+      quotes[current % quotes.length].classList.add('active');
+    }
+  }
+
+  setInterval(() => goTo((current + 1) % slides.length), 5000);
+
+  // Dot click
+  dotRow.addEventListener('click', e => {
+    const dots = [...document.querySelectorAll('.dot')];
+    const idx  = dots.indexOf(e.target);
+    if (idx !== -1) goTo(idx);
+  });
+})();
+
+/* ── Password toggle ── */
+function togglePwd(fieldId, iconId) {
+  const f = document.getElementById(fieldId);
+  const i = document.getElementById(iconId);
+  if (f.type === 'password') {
+    f.type = 'text';
+    i.classList.replace('fa-eye', 'fa-eye-slash');
+  } else {
+    f.type = 'password';
+    i.classList.replace('fa-eye-slash', 'fa-eye');
+  }
 }
 </script>
 {% endblock %}

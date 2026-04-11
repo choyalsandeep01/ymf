@@ -1,0 +1,236 @@
+Email*
+Primary Details
+NAME /  नाम  *
+मोबाईल क्र./Mobile Number*
+Age /  आयु*
+Date of Birth/  जन्मतिथि:
+
+*
+Date
+I have read the above information about the camp and I agree to the same.*
+Yes/No
+Select language*
+English/Hindi
+Are You Currently Studying or Working?*
+ Studying/working/both/Neither
+Highest Education Qualification* (select)
+1.Upto 9th STD
+2.10th/SSC
+3.12th/HSC
+4.Graduation
+5.Post Graduation
+6.Doctorate
+Name of The Course/Stream*--
+Name of The Institution/College*---
+Year of Pass Out (if Already Passed)---
+Skip if currently studying
+Year of Course if currently Enrolled in
+Skip if not currently studying 1st/2nd/3rd/4th//4+ (select)
+Are You Currently Working?*(select)
+Yes
+No
+If Yes - Name of The Organisation---
+skip if not Working
+If Working - Post/Position with Brief Responsibility---
+Skip if not Working
+Current Address*---
+PIN Code*----
+State*(select a from all states of india)
+Permanent Address*---
+PIN Code*--
+State*  (select from all states of india)
+Residence*(select)
+1.Urban
+2.Semi-Urban
+3.Rural
+4.Tribal
+Alternate Mobile Number (if Any)--
+Category*SC/ST/OBC/OPEN/VJ/NT/Other (select)
+Gender*(select)(Male/Female/Transgender/Prefer not to say/Other
+1.Male
+2.Female
+3.Transgender
+4.Prefer not to say.
+5.Other:
+Religion*--
+(Write Atheist or Not Applicable if Necessary)
+Section 2 - The questions no college exam will ask to you
+These set of questions will help us know you beyond your academics and on a more human level.
+What are your hobbies (list as many as possible)*
+Your achievements (Achievements may or may not be related to academics)*
+Name 5 movies you liked. Describe 3 of them in 50-100 words each, explaining why you liked them. [Could be the Dialogues, acting, plot, etc.]*
+Name 3 Web Series you liked. Describe 1 of them in 50-100 words each, explaining why you liked them.[Could be the Dialogues, acting, plot, etc.]*
+Name 5 books that you have liked reading. Describe 3 of them in 50-100 words each, explaining why you liked them.  [Could be the plot, emotions, writing, characters, etc.]*
+What are your strengths and weaknesses that you have identified within yourself?*
+What are you educational and career goal for next 5 and 10 years. *
+What kind of impact in outside world, do you hope to make through your education, skills and career?
+Social Sensitivity and Empathy
+We respect your thought process, and we would love to know more about it.
+What does a meaningful life mean to you?
+*-----
+What does "social work" or "working for society" and "Paying back to the society" mean to you?
+*-----
+How do you react when you witness social injustices or inequalities?*(select)
+1.I feel compelled to take action
+2.I feel sad but do not take action
+3.I feel indifferent or unsure how to respond
+4.Other:----
+Do you think society does enough to address social issues like poverty, inequality, casteism, environmental issues, dowry,  climate change, etc?(select)
+*
+1.Yes, a lot is being done
+2.Some action is being taken, but more is needed
+3.No, there is very little action being taken
+4.Not sure
+Explain why you feel this way (for the previous question).
+*
+How comfortable are you discussing sensitive social issues with others?*(select)
+1.Very comfortable
+2.Somewhat comfortable
+3.Neutral
+4.Somewhat uncomfortable
+5.Very uncomfortable
+With whom do you feel most comfortable discussing sensitive social issues? (Multiple choice question)(select)
+*
+1.Friends
+2.Family
+3.Teachers or mentors
+4.Community leaders
+5.Other:-------
+Commitment for a Social Change
+These set of questions will help us understand your capacity and commitment to become a social ch a changemaker.
+What are different social issue that deeply concerns you in your surrounding? Why those issues deeply concerns you? Explain any 2 issue which you are concerned the most and tell us what steps have you taken or would like to take to address it and understand it more deeply?*-------------
+How strongly do you feel about working to address/Understand any social issues?(select)
+*
+1. Very strongly
+2. Moderately strongly
+3. Neutral
+4. Not very strongly
+5. Not at all
+Have you ever participated in any activities related to social issues (e.g., volunteering, protests, community initiatives)?(select)
+*
+1. Yes, frequently
+2. Yes, occasionally
+3. No, but I am interested in starting
+4. No, and I’m not interested
+If you could take action to improve a social issue, which of the following would you be most interested in?*(select)
+1.Volunteering with community organizations
+2.Advocating for policy changes
+3.Educating others about the issue
+4.Fundraising or organizing events
+5.Other:-----
+What do you believe is the most effective way to address a social issue?
+*(select)
+1.Raising awareness and educating others
+2.Policy reform and advocacy
+3.Community action and grassroots movements
+4.Direct service and volunteering
+5.Other:---
+Would you be willing to dedicate time or resources to support a cause related to social issues?*(select)
+1.Yes, I’m ready to take active steps
+2.Maybe, depending on the issue
+3.No, I don't feel capable at this time
+4.Not sure
+How much time, each week, could you spare to work on any social issue?
+*(select)
+• 1-2 hours
+• 3-5 hours
+• 6-10 hours
+• 10+ hours
+Section 5 – Desire to Learn & Understand Social Issues in Depth:
+This set of questions will help us understand your desire to learn and understand Social changemaking. 
+Would you like to learn more about the root causes of social issues?
+*(select)
+1.Yes, definitely
+2.Maybe, depending on the issue
+3.No, I feel I already know enough
+4.I’m not sure
+What specific areas would you like to explore in-depth regarding social issues? (Select all that apply)(select)
+*
+1.Historical context of social issues
+2.Economic impacts of social problems
+3.Psychological and emotional impacts
+4.Solutions and initiatives to address these issues
+5.Role of policy and government
+6.Other:---
+What social problems in your surroundings cause you deep concern? Why do these issues worry you? Please explain two such problems in detail and describe what steps you intend to take or have already taken to resolve them.*----
+Which of these values do you believe are most important for social change?
+*(select)
+1.Equality
+2.Justice
+3.Empathy
+4.Sustainability
+5.Compassion
+6.Other:-----
+Which of the above values are present in you adequately? Which of the above values you want to cultivate in you?------
+*
+Do you have any previous experience in community work or volunteering? If yes, please describe your role and involvement of atleast 3 such experience in minimum 50-100 words.? 
+Which role you played in the above volunteering activities?---------
+How do you measure the success or impact of your work by volunteering in the above community service?----
+About GTP Camp.(Heading)
+What, according to you, is the role of youth in shaping society?
+*----
+What motivates you to care about social issues?*(select)
+1.Personal experiences
+2.Compassion for others
+3.A sense of justice or fairness
+4.Concern for the future
+5.Love to do such things
+6.I think, it is right. So i do it
+7.I just do it, I dont think this much
+8.Other:----
+What challenges or barriers do you face in becoming more involved in addressing social issues? (Can choose multiple options)*
+1.Laziness
+2.Less/No support from friends
+3.Lack of time
+4.Lack of information/knowledge
+5.Lack of resources
+6.Fear of failure or lack of impact
+7.Fear of missing pleasures in life
+8.Fear of having less time for my studies
+9.Resistance from parents
+10.Conflicts in group
+11.Mentoring not available
+12.Fear of any untoward consequences
+13.Other:----
+ Have you worked in a team before? What role do you usually take in a group?
+*-----
+What challenges have you faced while working in a group, and how did you resolve them?*----
+Can you share an experience where you changed your view on a topic after hearing a different perspective?----
+Do you have any long-term plans for contributing to social work or activism? If so, what are they? *-----
+The camp structure involves discussions and sharing by experts working on several problems in the society. Is there any particular problem that you would like to see discussed? (Write in 50-100 words)*----
+Why do you think you are the suitable candidate to be selected for the GTP camps? (Write in 50-100 words)*-----
+Final Section: Self Declaration 
+This final section contains some of the important questions we need to ask you before yu start your journey with us.(Heading)
+Why you want to Join the GTP camp? (You can choose multiple options )*(select)
+1.Are you sensitive about various social problems around?
+2.Are you seeking something beyond normal definition of success?
+3.Are you fed up of the rat race around you?
+4.Are you seeking like minded socially sensitive friends?
+5.Do you always feel in minority and feel that you cannot share your ideas about welfare of people/nature, with others?
+6.Do you want to listen to journeys of social change makers?
+7.Do you want to make some change in your surrounding or any social issue?
+8.Do you want to know in depth about the social issues of your interest?
+9.Do you want to join a group of socially sensitive people who want to live a meaningful life?
+10.Other:-----
+How did you come to know about Go to The People (GTP) Camp? आपको गो टू द पीपल कैंप के  बारे में कहाँ से पता चला?(select)
+*
+1.Past Participants of GTP (पूर्व में GTP में शामिल हुए सदस्य/सहभागी)
+2.Friends / दोस्त / Family / परिवार
+3.Facebook
+4.Instagram
+5.School/ College/Institution / किसी संस्था से
+6.Any Volunteer, Social Worker or NGO / किसी स्वयं सेवक / स्वयं सेवी संस्था से
+7.Anything else / अन्य कही से
+8.Other:----
+जिनसे पता चला उनका नाम लिखीये (Please write name of the person from whom you got to know about camp)-----
+The camp registration fees amount to up to Rs. 1000/- (For each camp) Do you have financial or any other issues which can stop you from registering in the camp? The fees need to be paid post your final selection for the camp after scrutinizing your application and not to be paid while filling the form. *----
+Please write down If you have any medical condition which needs attention or care. Also mention if you have any medical limitations or allergy to any food items. If you dont have any such condition, write "Not Applicable"*-----
+Self declaration
+"I declare that I am coming to this camp on my own responsibility. 
+I have taken permission from/given the necessary information to my parent/guardian. It will be entirely my responsibility if any problem arises from the time I am out of my residence for the camp and until I reach home safely. 
+YuMetta Foundation will not be responsible for my actions in any way. For my health related problems and special needs, I have given prior information in this form"
+Do you Agree ?(select)
+*
+1.Yes
+2.No
+3.Other:----
